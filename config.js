@@ -6,4 +6,4 @@
 
   비워 두면 게시판은 '미리보기 모드'로 동작합니다(글이 그 기기 안에만 저장됨).
 */
-window.BOARD_API_URL = "";
+window.BOARD_API_URL = "https://script.google.com/macros/s/AKfycbwnni1wMLqWC9gYcLuSOo1CDn6F94eQj4XeIH1dEBWRrtxYXmVrwaXCGC5sj92gvyio/exec";
