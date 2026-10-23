@@ -672,8 +672,10 @@ const TYPES = [
   {k:'데이터 도구', d:'자료를 모아 표와 그래프로 바꿔 주는 도구', kw:['그래프','투표','조사','자료','데이터']},
   {k:'AI 예측기', d:'규칙을 찾아 다음을 예측하고 이유를 설명', kw:['예측','맞히','AI','인공지능','패턴']}
 ];
-const UNIT_KW = {1:['큰 수','큰수','억','조','만','자릿값','뛰어'],2:['각','각도','예각','둔각','직각','각도기'],3:['곱셈','나눗셈','곱하기','나누기','몫','나머지','곱','나눠'],4:['밀기','뒤집','돌리','도형','이동','퍼즐','칠교','무늬'],5:['그래프','막대','투표','조사','자료'],6:['규칙','패턴','배열','등호','저울','다음 수']};
-function guessUnit(t){ let best=0,score=0; for(const u in UNIT_KW){ const s = UNIT_KW[u].filter(w=>t.includes(w)).length; if(s>score){score=s;best=+u;} } return best; }
+const UNIT_KW = {1:['큰 수','큰수','억','조','만','자릿값','뛰어'],2:['각','각도','예각','둔각','직각','각도기'],3:['곱셈','나눗셈','곱하기','나누기','몫','나머지','곱','나눠'],4:['밀기','뒤집','돌리','도형','이동','퍼즐','칠교','무늬','조각'],5:['그래프','막대','투표','조사','자료'],6:['규칙','패턴','배열','등호','저울','다음 수']};
+// '만들다'의 만, '조사'의 조, '생각'의 각처럼 한 글자 낱말이 잘못 걸리지 않게 먼저 지운다
+const FALSE_HIT = /만들|만드|만든|만나|만약|만점|생각|조각|조사|조종|조금|조건|각자|각각/g;
+function guessUnit(t){ const c = t.replace(FALSE_HIT,' '); let best=0,score=0; for(const u in UNIT_KW){ const src = (u==='1'||u==='2') ? c : t; const s = UNIT_KW[u].filter(w=>src.includes(w)).length; if(s>score){score=s;best=+u;} } return best; }
 function guessType(t){ for(const ty of TYPES){ if(ty.kw.some(w=>t.includes(w))) return ty.k; } return ''; }
 const IDEAS = {
   1:[{t:'억·조 읽기 퀴즈쇼', d:'큰 수를 보고 바르게 읽기, 자릿값 맞히기', type:'퀴즈쇼'},{t:'가장 큰 수 만들기 대결', d:'수 카드로 AI와 누가 더 큰 수를 만드나', type:'게임'}],
