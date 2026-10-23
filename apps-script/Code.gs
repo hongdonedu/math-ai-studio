@@ -16,7 +16,7 @@
 const TEACHER_KEY = '2022';            // 선생님 모드 비밀번호 (사이트의 선생님 메뉴와 같게)
 const LIMIT = { name: 12, title: 30, desc: 120, text: 200, url: 400 };
 const BLOCKED = ['바보', '멍청', '죽어', '꺼져', '병신', '시발', '씨발', 'ㅅㅂ', 'ㅂㅅ', '개새', '존나', '좆', '지랄', '닥쳐', '찐따', '애미', '느금'];
-const POST_HEAD = ['id', 'time', 'name', 'title', 'unit', 'type', 'desc', 'url', 'color', 'likes', 'wows', 'hidden'];
+const POST_HEAD = ['id', 'time', 'name', 'title', 'unit', 'type', 'desc', 'url', 'color', 'likes', 'wows', 'hidden', 'cls'];
 const COMMENT_HEAD = ['id', 'postId', 'time', 'name', 'kind', 'text', 'hidden'];
 
 function doGet(e) {
@@ -48,7 +48,7 @@ function listAll(isTeacher) {
   const posts = rows('posts', POST_HEAD).filter(r => r.id && (isTeacher || !truthy(r.hidden))).map(r => ({
     id: String(r.id), time: iso(r.time), name: String(r.name), title: String(r.title), unit: String(r.unit),
     type: String(r.type), desc: String(r.desc), url: String(r.url), color: String(r.color),
-    likes: Number(r.likes) || 0, wows: Number(r.wows) || 0, hidden: truthy(r.hidden)
+    likes: Number(r.likes) || 0, wows: Number(r.wows) || 0, hidden: truthy(r.hidden), cls: String(r.cls || '')
   }));
   const comments = rows('comments', COMMENT_HEAD).filter(r => r.id && (isTeacher || !truthy(r.hidden))).map(r => ({
     id: String(r.id), postId: String(r.postId), time: iso(r.time), name: String(r.name),
@@ -67,7 +67,7 @@ function addPost(b) {
   if (!/^https:\/\/[^\s<>"']+$/i.test(url)) return { ok: false, error: '링크는 https:// 로 시작해야 해요. 캔바에서 복사한 주소를 그대로 붙여 넣어 주세요.' };
   if (bad(name + title + desc)) return { ok: false, error: '고운 말로 다시 써 주세요.' };
   const id = 'p' + Utilities.getUuid().replace(/-/g, '').slice(0, 10);
-  sheet('posts', POST_HEAD).appendRow([id, new Date().toISOString(), name, title, clean(b.unit, 20), clean(b.type, 20), desc, url, clean(b.color, 20), 0, 0, false]);
+  sheet('posts', POST_HEAD).appendRow([id, new Date().toISOString(), name, title, clean(b.unit, 20), clean(b.type, 20), desc, url, clean(b.color, 20), 0, 0, false, clean(b.cls, 10)]);
   return { ok: true, id: id };
 }
 
