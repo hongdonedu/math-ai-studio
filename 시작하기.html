@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>수학 AI 스튜디오 · 선생님 준비</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+:root{--ink:#1d1a3a;--ink2:#4b4870;--line:#e3dcfb;--acc:#5536d6;--soft:#f5f2ff}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans KR",system-ui,sans-serif;color:var(--ink);background:var(--soft);line-height:1.7;word-break:keep-all}
+.wrap{max-width:860px;margin:0 auto;padding:28px 18px 60px}
+.hero{border-radius:28px;overflow:hidden;background:#1d1747 url(assets/keyart.webp) center/cover;min-height:240px;display:flex;align-items:flex-end;box-shadow:0 20px 40px -24px rgba(40,20,120,.7)}
+.hero div{width:100%;padding:22px 26px;background:linear-gradient(180deg,transparent,rgba(20,12,60,.9))}
+h1,h2{font-family:"Jua",sans-serif;font-weight:400;margin:0}
+.hero h1{color:#fff;font-size:34px;text-shadow:0 3px 0 #3b23a8}
+.hero p{color:#ffd257;margin:4px 0 0;font-weight:700}
+section{background:#fff;border:2px solid var(--line);border-radius:22px;padding:20px 22px;margin-top:18px}
+h2{font-size:24px;color:#2a1f6b;margin-bottom:8px}
+ol{padding-left:22px;margin:6px 0}
+li{margin:4px 0}
+code{background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:14px}
+.tip{background:#fff8e1;border:2px dashed #f0b429;border-radius:14px;padding:10px 14px;margin-top:10px;font-size:15px}
+a{color:var(--acc);font-weight:700}
+table{border-collapse:collapse;width:100%;font-size:15px}
+td,th{border-bottom:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
+th{color:var(--ink2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero"><div><h1>수학 AI 스튜디오 · 선생님 준비</h1><p>나는 수학 프로그램 디자이너 — SW·AI로 완성하는 나만의 수학 인공지능 프로그램</p></div></div>
+
+  <section>
+    <h2>폴더 구성</h2>
+    <table>
+      <tr><th>index.html</th><td>수업 허브: 1 만나기 → 2 체험하기 → 3 해부하기 → 4 설계하기(캔바 AI 주문서 자동 생성) → 5 만들기(캔바 초대 링크·QR) → 6 공유하기(작품 전시관·칭찬 게시판) → 7 돌아보기</td></tr>
+      <tr><th>apps/</th><td>체험 앱 3개: <b>넘버 갤럭시</b>(1 큰 수·3 곱셈과 나눗셈) · <b>도형 코딩봇</b>(2 각도·4 평면도형의 이동) · <b>패턴 AI 연구소</b>(5 막대그래프·6 규칙과 관계). 미션 6개씩, 별·배지, 설계도 보기.</td></tr>
+      <tr><th>assets/</th><td>ChatGPT로 그린 그림(타이틀, 수리 캐릭터 3벌·표정 4개, 배경 3장, 소품 24개, 배지 4개)과 게임 공용 코드</td></tr>
+      <tr><th>config.js</th><td>게시판 연결 주소 한 줄 (아래 ②)</td></tr>
+      <tr><th>apps-script/Code.gs</th><td>게시판 저장소(구글 시트) 코드</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>① 인터넷 주소 만들기 (GitHub Pages)</h2>
+    <ol>
+      <li>GitHub에서 새 저장소 <code>math-ai-studio</code> 를 <b>Public</b>으로 만들기</li>
+      <li><b>Add file → Upload files</b> → 이 폴더 <b>안의</b> 파일·폴더를 모두 끌어다 놓기 → <b>Commit changes</b></li>
+      <li><b>Settings → Pages → Branch: main / (root) → Save</b> → 1~2분 뒤 <code>https://아이디.github.io/math-ai-studio/</code></li>
+    </ol>
+    <div class="tip">아이들에게는 이 주소 하나만 주면 돼요. 허브의 <b>선생님 메뉴</b>에서 이 주소의 QR을 화면에 띄울 수 있어요.</div>
+  </section>
+
+  <section>
+    <h2>② 공유 게시판 연결 (3분)</h2>
+    <p>아이들이 계정 없이 작품과 칭찬을 올리면 선생님 구글 드라이브의 시트 「<b>수학 AI 스튜디오 공유 게시판 (2026 영재 특강)</b>」에 저장돼요. 시트는 미리 만들어 두었어요.</p>
+    <ol>
+      <li>그 시트를 열고 메뉴 <b>확장 프로그램 → Apps Script</b></li>
+      <li>원래 코드를 지우고 <code>apps-script/Code.gs</code> 내용을 통째로 붙여 넣기 → 저장</li>
+      <li>오른쪽 위 <b>배포 → 새 배포 → 톱니바퀴 → 웹 앱</b> · 실행: <b>나</b> · 액세스: <b>모든 사용자</b> → <b>배포</b> → 권한 승인(계정 선택 → 고급 → 이동 → 허용)</li>
+      <li>나온 <b>웹 앱 URL</b>을 복사해 <code>config.js</code> 의 따옴표 안에 붙여 넣고, GitHub에 config.js만 다시 올리기</li>
+    </ol>
+    <div class="tip">연결 전에는 게시판이 <b>미리보기 모드</b>(그 기기에만 저장)로 동작해요. 연결되면 전시관 위에 <b>실시간 연결됨</b> 표시가 떠요. 선생님 메뉴 → 비밀번호 <code>2022</code> → 관리 켜기로 글을 숨길 수 있어요(비밀번호는 Code.gs 맨 위에서 바꿀 수 있어요). 욕설은 저장 전에 걸러져요.</div>
+  </section>
+
+  <section>
+    <h2>③ 캔바 확인</h2>
+    <ol>
+      <li>초대 링크로 학생이 들어오면 우리 반(팀)에 참여돼요. 허브 5단계에 링크와 QR이 있어요.</li>
+      <li>캔바 교육용에서는 <b>선생님이 Canva Code 사용을 허용</b>해야 학생 화면에 ‘코드’가 보여요. 수업 전에 학생 계정으로 한 번 확인해 주세요.</li>
+      <li>학생 작품은 <b>게시(Publish)</b> → 사이트 주소 복사 → 전시관에 붙여 넣기. 게시가 막혀 있으면 <b>공유 → 링크 복사</b>로 올려도 돼요.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>수업 흐름 예시 (120분)</h2>
+    <table>
+      <tr><th>10분</th><td>1 만나기 — 미니 곱셈 도우미로 ‘입력 → 규칙 → 출력’ 체험</td></tr>
+      <tr><th>25분</th><td>2 체험하기 — 예시 앱 3개(앱당 7~8분), 관찰 미션 체크, 일부러 틀려 보기</td></tr>
+      <tr><th>10분</th><td>3 해부하기 — 비교표와 프로그램 종류 메뉴판, 아이디어 은행</td></tr>
+      <tr><th>15분</th><td>4 설계하기 — 설계 카드 작성 → 주문서 복사</td></tr>
+      <tr><th>40분</th><td>5 만들기 — 캔바 AI(코드)로 제작, 고치기 주문으로 다듬기, 정답 검사 체크리스트</td></tr>
+      <tr><th>15분</th><td>6 공유하기 — 전시관에 올리고 친구 작품 체험 후 잘한 점·인상 깊은 점 남기기</td></tr>
+      <tr><th>5분</th><td>7 돌아보기 — 디자이너 노트와 배지</td></tr>
+    </table>
+    <div class="tip">선생님 메뉴의 타이머(3·5·10·15·25분)를 활동마다 쓰면 편해요.</div>
+  </section>
+</div>
+</body>
+</html>

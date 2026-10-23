@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>패턴 AI 연구소</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700;900&family=Fredoka:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/game.css">
+<style>
+body{--accent:#f2542d;--accent-2:#ff9a6b;--accent-dark:#c23a17;--accent-soft:#ffe9e0;--night:#2a1410;--paper-2:#fff4ee;--veil:linear-gradient(180deg,rgba(40,16,10,.05),rgba(40,16,10,.5))}
+/* 수 배열표 */
+.numgrid{display:grid;gap:6px;margin:4px 0 12px;position:relative}
+.numgrid .c{background:#fff;border:3px solid #ffd9c9;border-radius:14px;text-align:center;font-family:var(--f-num);font-weight:700;font-size:clamp(17px,2.4vw,24px);padding:10px 2px;color:var(--ink)}
+.numgrid .c.blank{background:var(--gold);border-color:#e9a400;color:#5a3300}
+.numgrid .c.row-hl{border-color:var(--accent);background:var(--accent-soft)}
+.numgrid .c.col-hl{border-color:#2f80ed;background:#e6f0fd}
+.dir-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.dir-tags span{font-weight:800;font-size:14px;border-radius:999px;padding:3px 12px}
+.dir-tags .r{background:var(--accent-soft);color:var(--accent-dark)} .dir-tags .d{background:#e6f0fd;color:#1d5fbf}
+/* 계산식 배열 */
+.eqs{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;font-family:var(--f-num);font-weight:700;font-size:clamp(20px,2.8vw,28px)}
+.eqs div{background:#fff;border-radius:14px;padding:6px 16px;border:3px solid #ffe1d4;display:flex;justify-content:space-between;gap:12px;animation:panelIn .4s both}
+.eqs div.q{border-style:dashed;border-color:var(--accent);background:var(--accent-soft)}
+.eqs .rt{color:var(--accent-dark)}
+.ai-card{display:flex;gap:14px;align-items:flex-start;background:linear-gradient(135deg,#2a1e4a,#3c2a6e);color:#fff;border-radius:22px;padding:16px 18px;margin-bottom:12px;box-shadow:0 10px 24px -12px rgba(0,0,0,.6)}
+.ai-card img{width:68px;height:68px;object-fit:contain;flex:none}
+.ai-card .lbl{font-family:var(--f-title);font-size:15px;color:#ffc9b6}
+.ai-card .pred{font-family:var(--f-num);font-weight:700;font-size:clamp(18px,2.6vw,26px);word-break:break-all;margin:2px 0 8px}
+.conf{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:#e9e3ff}
+.conf .cbar{flex:1;height:10px;border-radius:99px;background:rgba(255,255,255,.2);overflow:hidden;max-width:220px}
+.conf .cbar i{display:block;height:100%;background:linear-gradient(90deg,#ffc23d,#ff7b54);border-radius:inherit;transition:width .8s}
+.rule-chip{display:inline-flex;gap:6px;align-items:center;background:#fff;color:var(--accent-dark);font-weight:800;font-size:14px;border-radius:999px;padding:3px 12px;margin-right:6px}
+.truth{font-family:var(--f-num);font-weight:700;word-break:break-all}
+/* 도형 배열 */
+.figs{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
+.fig{display:flex;flex-direction:column;align-items:center;gap:4px;background:#fff;border:3px solid #ffe1d4;border-radius:16px;padding:8px 10px;animation:panelIn .4s both}
+.fig svg{display:block}
+.fig span{font-weight:800;font-size:13px;color:var(--ink-3)}
+.fig.q{border-style:dashed;border-color:var(--accent);background:var(--accent-soft)}
+/* 저울 */
+.scale-svg{width:100%;max-width:460px;height:auto;display:block;margin:0 auto}
+.beam{transition:transform .6s cubic-bezier(.3,1.4,.5,1);transform-box:view-box;transform-origin:280px 120px}
+.pan{transition:transform .6s cubic-bezier(.3,1.4,.5,1);transform-box:view-box}
+.pan text{font:700 24px var(--f-num);fill:#3b2410}
+.level-ok{animation:levelGlow 1s ease-in-out 2}
+@keyframes levelGlow{50%{filter:drop-shadow(0 0 16px rgba(255,194,61,.9))}}
+.sq-row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.sq-row button.adj{border:3px solid var(--line);background:#fff;border-radius:14px;min-width:54px;min-height:50px;font-weight:900;font-family:var(--f-num);font-size:22px}
+.sq-row .ans{width:120px}
+.eq-big{font-family:var(--f-num);font-weight:700;font-size:clamp(24px,3.6vw,38px);text-align:center;margin:4px 0 12px}
+/* 막대그래프 */
+.gwrap{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.4fr);gap:16px;align-items:start}
+.gwrap>*{min-width:0}
+table.data{border-collapse:separate;border-spacing:0;width:100%;font-size:16px;border-radius:14px;overflow:hidden;border:2px solid #ffd9c9}
+.data th,.data td{padding:8px 10px;text-align:center;border-bottom:1px solid #ffe1d4}
+.data th{background:var(--accent-soft);color:var(--accent-dark);font-weight:800}
+.data td{font-family:var(--f-num);font-weight:700;background:#fff}
+.graph{width:100%;height:auto;display:block;background:#fff;border-radius:16px;border:2px solid #ffd9c9}
+.graph text{font:600 13px var(--f-body);fill:#4b3a33}
+.graph .t{font:800 15px var(--f-body);fill:#2a1410}
+.graph .gbar{transition:height .4s,y .4s,width .4s}
+.bar-ctl{display:grid;gap:6px;margin-top:8px}
+.bar-ctl .bc{display:flex;align-items:center;gap:8px;font-weight:800}
+.bar-ctl .bc span{min-width:84px}
+.bar-ctl button{width:40px;height:40px;border-radius:12px;border:2px solid var(--line);background:#fff;font-weight:900;font-size:20px}
+.bar-ctl b{font-family:var(--f-num);min-width:38px;text-align:center;font-size:18px}
+.mini-tog{border:2px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-weight:800;font-size:14px}
+/* AI 대결 */
+.seq-in{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.seq-in .ans{width:min(420px,100%);text-align:left;font-size:22px}
+.scorebar{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.scorebar span{font-weight:800;border-radius:999px;padding:4px 14px;background:#fff;border:2px solid var(--line)}
+.scorebar b{font-family:var(--f-num);color:var(--accent-dark)}
+@media (max-width:820px){ .gwrap{grid-template-columns:1fr} }
+@media (max-width:560px){ .ai-card img{width:48px;height:48px} .numgrid .c{padding:8px 0;font-size:15px;border-width:2px} }
+</style>
+</head>
+<body>
+<script src="../assets/game.js"></script>
+<script>
+(function(){
+const {rand, pick, shuffle, esc} = Game;
+const A = '../assets/';
+const robot = A+'suri_lab.webp';
+
+/* ---------- 미션 1: 수 배열 규칙 ---------- */
+function makeTable(){
+  const presets = [[1201,100,1000],[3,9,-1],[27,27,270],[2105,10,100],[5000,-100,1000],[4,11,22]];
+  let [s,h,v] = Math.random()<.4 ? pick(presets) : [rand(10,90)*10+rand(0,9), pick([1,10,100,9,11,5,25]), pick([10,100,1000,20,50])];
+  if(v===h) v = h*10;
+  const rows=3, cols=5; const m = Array.from({length:rows},(_,r)=>Array.from({length:cols},(_,c)=>s + c*h + r*v));
+  if(m.flat().some(x=>x<0)) return makeTable();
+  return {s,h,v,m,rows,cols};
+}
+function tableHTML(T, blank, hl){
+  return `<div class="dir-tags"><span class="r">가로 →</span><span class="d">세로 ↓</span></div><div class="numgrid" style="grid-template-columns:repeat(${T.cols},minmax(0,1fr))">${T.m.map((row,r)=>row.map((x,c)=>{ const isB = blank && blank[0]===r && blank[1]===c; const cls = isB?'blank':(hl==='row'&&r===0?'row-hl':hl==='col'&&c===0?'col-hl':''); return `<div class="c ${cls}">${isB?'?':x}</div>`; }).join('')).join('')}</div>`;
+}
+const sg = n => (n>=0?'+':'−')+Math.abs(n);
+function ruleText(n, dir){ return `${dir} 방향으로 ${Math.abs(n)}씩 ${n>=0?'커집니다':'작아집니다'}`; }
+function m1(i, ctx){
+  if(i===0||i===3||!ctx.T) ctx.T = makeTable();
+  const T = ctx.T;
+  if(i===0||i===3){
+    const r = rand(0,T.rows-1), c = rand(1,T.cols-1), ans = T.m[r][c];
+    return { kicker:'숫자 섬 · 빈칸 채우기', title:'수 배열의 규칙을 찾아 <em>?</em>에 알맞은 수를 써 보세요.',
+      say: i===0 ? '숫자 섬 입구예요! 가로(→)와 세로(↓)로 수가 어떻게 변하는지 살펴봐요.' : null,
+      render(box, api){ box.innerHTML = tableHTML(T,[r,c]); api.input(box, {placeholder:'?'}); },
+      check:v=>{ if(v===ans) return true; if(v===T.m[r][c-1]) return '그건 바로 왼쪽 수예요. 가로로 갈 때 얼마씩 변하는지 보세요.'; return `가로로 이웃한 두 수의 차이를 구해 보세요. 예: ${T.m[0][1]} − ${T.m[0][0]}`; },
+      after(box){ const g=document.querySelector('.q-box .numgrid'); if(g){ const w=document.createElement('div'); w.innerHTML=tableHTML(T,null,'row'); g.replaceWith(w.querySelector('.numgrid')); } },
+      solution:`가로(→)로 <b>${sg(T.h)}</b>, 세로(↓)로 <b>${sg(T.v)}</b>씩 변해요. ${T.m[r][c-1]} ${T.h>=0?'+':'−'} ${Math.abs(T.h)} = <b>${ans}</b>` };
+  }
+  if(i===1||i===2){
+    const dir = i===1?'가로(→)':'세로(↓)', n = i===1?T.h:T.v;
+    const wrong = shuffle([n*10, n+1, -n, Math.round(n/10)||n+2].filter(x=>x!==n)).slice(0,3);
+    const opts = shuffle([n, ...wrong]);
+    return { kicker:'규칙 말하기', title:`${dir} 방향의 규칙으로 알맞은 것을 고르세요.`,
+      render(box, api){ box.innerHTML = tableHTML(T,null,i===1?'row':'col'); api.choices(box, opts.map(x=>({label:ruleText(x,dir.slice(0,2)), value:x})), {cols:1}); },
+      check:v=> v===n ? true : `${dir} 방향으로 이웃한 두 수를 빼 보세요.`,
+      solution:`${i===1?`${T.m[0][1]} − ${T.m[0][0]}`:`${T.m[1][0]} − ${T.m[0][0]}`} = ${n} → <b>${ruleText(n, dir.slice(0,2))}</b>` };
+  }
+  // 식으로 나타내기
+  const a = T.m[0][0], b = T.m[0][1];
+  const right = `${a} ${T.h>=0?'+':'−'} ${Math.abs(T.h)} = ${b}`;
+  const opts = shuffle([right, `${a} + ${Math.abs(T.v)} = ${a+Math.abs(T.v)}`, `${a} × ${Math.abs(T.h)} = ${a*Math.abs(T.h)}`, `${b} ${T.h>=0?'+':'−'} ${Math.abs(T.h)} = ${a}`]);
+  return { kicker:'식으로 나타내기', title:`${a}부터 가로(→) 방향 규칙을 <em>식</em>으로 바르게 나타낸 것은?`,
+    render(box, api){ box.innerHTML = tableHTML(T,null,'row'); api.choices(box, opts, {cols:1}); },
+    check:v=> v===right ? true : '첫째 수에 규칙만큼 더하거나 빼면 둘째 수가 되는 식을 찾아보세요.',
+    solution:`<b>${right}</b> — 다음 수도 ${b} ${T.h>=0?'+':'−'} ${Math.abs(T.h)} = ${b+T.h}처럼 계속 이어져요.` };
+}
+
+/* ---------- 미션 2: 계산식 배열 & AI 오류 찾기 ---------- */
+const PATS = {
+  add100:{rows:[[10,'+',90],[20,'+',80],[30,'+',70],[40,'+',60]], next:[50,'+',50]},
+  sub110:{rows:[[121,'−',11],[122,'−',12],[123,'−',13],[124,'−',14]], next:[125,'−',15]},
+  mul3:{rows:[[1,'×',3],[11,'×',3],[111,'×',3],[1111,'×',3]], next:[11111,'×',3]},
+  div5:{rows:[[5,'÷',5],[55,'÷',5],[555,'÷',5],[5555,'÷',5]], next:[55555,'÷',5]},
+  add110:{rows:[[30,'+',80],[50,'+',60],[70,'+',40]], next:[90,'+',20]},
+  mul9:{rows:[[9,'×',9],[99,'×',99],[999,'×',999]], next:[9999,'×',9999]}
+};
+const calc = (a,op,b) => op==='+'?a+b:op==='−'?a-b:op==='×'?a*b:a/b;
+const eqRow = (r, q) => `<div class="${q?'q':''}"><span>${r[0]} ${r[1]} ${r[2]}</span><span class="rt">= ${q?'?':calc(r[0],r[1],r[2])}</span></div>`;
+function ones(k){ return BigInt('1'.repeat(k)); }
+function m2(i, ctx){
+  if(i===0){
+    const P = PATS[pick(['mul3','div5'])];
+    const ans = calc(...P.next);
+    return { kicker:'계산식 배열 · 교과서 6단원', title:'규칙을 찾아 다음 계산식의 <em>결과</em>를 예측하세요.',
+      say:'계산식에도 규칙이 숨어 있어요. 계산하기 전에 결과를 먼저 <b>예측</b>해 봐요!',
+      render(box, api){ box.innerHTML = `<div class="eqs">${P.rows.map(r=>eqRow(r)).join('')}${eqRow(P.next,true)}</div>`; api.input(box, {placeholder:'예측한 결과'}); },
+      check:v=> v===ans ? true : '곱하는(나누는) 수의 자리 수가 하나씩 늘면 결과는 어떻게 변하나요?',
+      solution:`${P.next[0]} ${P.next[1]} ${P.next[2]} = <b>${ans}</b> — 1이 하나 늘 때마다 결과의 ${P.next[1]==='×'?'3':'1'}도 하나씩 늘어요.` };
+  }
+  if(i===1){
+    const P = PATS[pick(['sub110','add110','add100'])];
+    const right = `${P.next[0]} ${P.next[1]} ${P.next[2]} = ${calc(...P.next)}`;
+    const [a,op,b] = P.next;
+    const opts = shuffle([right, `${a} ${op} ${b+10} = ${calc(a,op,b+10)}`, `${a+1} ${op} ${b} = ${calc(a+1,op,b)}`, `${a} ${op} ${b} = ${calc(a,op,b)+10}`]);
+    return { kicker:'다음 계산식', title:'규칙에 따라 다음에 올 계산식을 고르세요.',
+      render(box, api){ box.innerHTML = `<div class="eqs">${P.rows.map(r=>eqRow(r)).join('')}</div>`; api.choices(box, opts, {cols:1}); },
+      check:v=> v===right ? true : '앞의 수와 뒤의 수가 각각 얼마씩 변하는지 따로 살펴보세요. 결과는 어떻게 되나요?',
+      solution:`앞의 수는 ${P.rows[1][0]-P.rows[0][0]}씩, 뒤의 수는 ${P.rows[1][2]-P.rows[0][2]}씩 변하고 결과는 그대로예요. 다음은 <b>${right}</b>` };
+  }
+  if(i===2){
+    const P = PATS.mul9; const ans = calc(...P.next);
+    return { kicker:'AI의 예측 검사', title:'패턴GPT의 예측이 맞았을까요? <em>O</em> 또는 <em>X</em>를 고르세요.',
+      say:'이번엔 제가 예측해 볼게요! 하지만 AI도 틀릴 수 있으니 꼭 검사해 주세요.',
+      render(box, api){ box.innerHTML = `<div class="eqs">${P.rows.map(r=>eqRow(r)).join('')}</div>${aiCard(`${P.next[0]} × ${P.next[1]===undefined?'':P.next[2]} = ${ans}`, 88, ['9가 하나 늘면 9와 0이 하나씩 늘어나요'])}`; api.choices(box, [{label:'O 맞아요', value:'O'},{label:'X 틀렸어요', value:'X'}], {cols:2}); },
+      check:v=> v==='O' ? true : '9999 × 9999를 직접 계산해 보거나, 규칙(9가 늘면 9와 0이 늘어남)을 다시 확인해 보세요.',
+      after(box){ box.innerHTML = `<div class="solution" style="margin-top:0">검산: 9999 × 9999 = <span class="truth">${ans}</span> → 패턴GPT의 예측이 <b>맞았어요</b>.</div>`; },
+      solution:`9999 × 9999 = <b>${ans}</b>. 이번에는 패턴GPT가 맞았어요.` };
+  }
+  if(i===3){
+    const k = 5, real = (ones(k)*ones(k)).toString();
+    return { kicker:'AI의 예측 검사', title:'1이 다섯 개인 수끼리 곱하면? 패턴GPT의 예측이 맞았을까요?',
+      render(box, api){ box.innerHTML = `<div class="eqs">${[1,2,3,4].map(n=>`<div><span>${'1'.repeat(n)} × ${'1'.repeat(n)}</span><span class="rt">= ${(ones(n)*ones(n)).toString()}</span></div>`).join('')}</div>${aiCard(`11111 × 11111 = 123454321`, 91, ['가운데까지 1, 2, 3…으로 커졌다가 다시 작아져요'])}`; api.choices(box, [{label:'O 맞아요', value:'O'},{label:'X 틀렸어요', value:'X'}], {cols:2}); },
+      check:v=> v==='O' ? true : '1, 121, 12321, 1234321… 다음은 가운데에 5가 오는 수예요. 다시 보세요.',
+      after(box){ box.innerHTML = `<div class="solution" style="margin-top:0">검산: 11111 × 11111 = <span class="truth">${real}</span> → <b>맞았어요</b>.</div>`; },
+      solution:`11111 × 11111 = <b>${real}</b>` };
+  }
+  const k = 10, real = (ones(k)*ones(k)).toString(), fake = '12345678910987654321';
+  return { kicker:'AI 오류 찾기', title:'1이 <em>열 개</em>인 수끼리 곱하면? 이번에도 패턴GPT가 맞았을까요?',
+    say:'규칙을 그대로 늘리면 될 것 같아요… 제 예측, 정말 맞을까요?',
+    render(box, api){ box.innerHTML = `<div class="eqs"><div><span>11111 × 11111</span><span class="rt">= 123454321</span></div><div><span>111111 × 111111</span><span class="rt">= 12345654321</span></div></div>${aiCard(`1111111111 × 1111111111 = ${fake}`, 94, ['1, 2, 3…을 10까지 늘렸다가 다시 줄여요'])}`; api.choices(box, [{label:'O 맞아요', value:'O'},{label:'X 틀렸어요', value:'X'}], {cols:2}); },
+    check:v=> v==='X' ? true : '각 자리에는 숫자 하나만 쓸 수 있어요. 가운데 자리가 10이 되면 어떻게 될까요? (받아올림!)',
+    after(box){ box.innerHTML = `<div class="solution" style="margin-top:0"><b>AI가 틀렸어요!</b> 진짜 값: <span class="truth">${real}</span><br>패턴GPT의 답: <span class="truth" style="text-decoration:line-through;color:var(--bad)">${fake}</span><br>한 자리에 10을 쓸 수 없어서 <b>받아올림</b>이 생기고, 그래서 규칙이 깨져요. 규칙이 <b>언제까지</b> 맞는지 확인하는 것이 사람의 일이에요!</div>`; },
+    solution:`진짜 값은 <b class="truth">${real}</b>이에요. 가운데에서 받아올림이 생겨 규칙이 깨져요. 패턴GPT가 틀렸어요!`,
+    praise:'AI의 실수를 잡아냈어요!' };
+}
+function aiCard(pred, conf, rules){
+  return `<div class="ai-card"><img src="${robot}" alt=""><div style="min-width:0;flex:1"><div class="lbl">패턴GPT의 예측</div><div class="pred">${pred}</div><div style="margin-bottom:6px">${rules.map(r=>`<span class="rule-chip">찾은 규칙</span><span style="font-size:14px">${r}</span>`).join('')}</div><div class="conf">확신도 <div class="cbar"><i style="width:${conf}%"></i></div> ${conf}%</div></div></div>`;
+}
+
+/* ---------- 미션 3: 도형 배열 ---------- */
+const SHAPE_PATS = {
+  squares2:{name:'사각형이 2개씩 늘어나요', f:k=>2*k, draw:(k)=>gridDots(2,k,'sq'), expr:'2, 2+2, 2+2+2, …', exprs:['2, 2+2, 2+2+2, …','2, 2×2, 2×2×2, …','1, 1+2, 1+2+3, …']},
+  odd:{name:'ㄱ자 모양으로 2개씩 늘어나요', f:k=>2*k-1, draw:k=>lShape(k), expr:'1, 1+2, 1+2+2, …', exprs:['1, 1+2, 1+2+2, …','1, 1×2, 1×2×2, …','1, 2, 3, 4, …']},
+  tri:{name:'한 줄에 하나씩 더 많은 바둑돌이 늘어나요', f:k=>k*(k+1)/2, draw:k=>triDots(k), expr:'1, 1+2, 1+2+3, …', exprs:['1, 1+2, 1+2+3, …','1, 1+3, 1+3+5, …','1, 2, 4, 8, …']},
+  sq:{name:'정사각형 모양으로 커져요', f:k=>k*k, draw:k=>gridDots(k,k,'dot'), expr:'1×1, 2×2, 3×3, …', exprs:['1×1, 2×2, 3×3, …','1, 1+2, 1+2+3, …','2, 2+2, 2+2+2, …']}
+};
+const S = 16;
+function gridDots(cols, rows, kind){ const w=cols*S+4, h=rows*S+4; let s=''; for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) s += kind==='sq' ? `<rect x="${2+c*S}" y="${2+r*S}" width="${S-2}" height="${S-2}" rx="3" fill="#f2542d"/>` : `<circle cx="${2+c*S+S/2}" cy="${2+r*S+S/2}" r="${S/2-2}" fill="#2a1410"/>`; return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${s}</svg>`; }
+function triDots(k){ const w=k*S+4, h=k*S+4; let s=''; for(let r=0;r<k;r++) for(let c=0;c<=r;c++) s+=`<circle cx="${2+(k-r-1)*S/2+c*S+S/2}" cy="${2+r*S+S/2}" r="${S/2-2}" fill="${r===k-1?'#f2542d':'#2a1410'}"/>`; return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${s}</svg>`; }
+function lShape(k){ const w=k*S+4, h=k*S+4; let s=''; for(let r=0;r<k;r++) s+=`<rect x="2" y="${2+r*S}" width="${S-2}" height="${S-2}" rx="3" fill="#2f80ed"/>`; for(let c=1;c<k;c++) s+=`<rect x="${2+c*S}" y="${2+(k-1)*S}" width="${S-2}" height="${S-2}" rx="3" fill="#2f80ed"/>`; return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${s}</svg>`; }
+const ORD = ['첫째','둘째','셋째','넷째','다섯째','여섯째'];
+function figsHTML(P, n, q){ return `<div class="figs">${Array.from({length:n},(_,k)=>`<div class="fig"><span>${ORD[k]}</span>${P.draw(k+1)}</div>`).join('')}${q?`<div class="fig q"><span>${ORD[n]}</span><div style="width:60px;height:60px;display:grid;place-items:center;font:700 36px var(--f-num);color:var(--accent-dark)">?</div></div>`:''}</div>`; }
+function m3(i, ctx){
+  const keys = ctx.keys || (ctx.keys = shuffle(Object.keys(SHAPE_PATS)));
+  const P = SHAPE_PATS[keys[i % keys.length]];
+  if(i===0||i===3){
+    const ans = P.f(5);
+    return { kicker:'도형 섬 · 모양의 배열', title:'규칙에 따라 <em>다섯째</em>에 올 모양에는 몇 개가 있을까요?',
+      say: i===0 ? '도형 섬에 왔어요. 모양이 커질 때 몇 개씩 늘어나는지 세어 봐요!' : null,
+      render(box, api){ box.innerHTML = figsHTML(P,4,true); api.input(box, {placeholder:'개수', unit:'개'}); },
+      check:v=> v===ans ? true : `넷째는 ${P.f(4)}개예요. 셋째에서 넷째로 갈 때 몇 개 늘었는지 보고 한 번 더 늘려 보세요.`,
+      after(box){ const f=document.querySelector('.q-box .figs'); if(f){ const w=document.createElement('div'); w.innerHTML=figsHTML(P,5,false); f.replaceWith(w.firstElementChild); } },
+      solution:`${[1,2,3,4,5].map(k=>P.f(k)).join(', ')} → 다섯째는 <b>${ans}개</b>. 규칙: ${P.name}`,
+      praise:P.name };
+  }
+  if(i===1){
+    return { kicker:'규칙을 식으로', title:'모양의 개수를 나타내는 식으로 알맞은 것을 고르세요.',
+      render(box, api){ box.innerHTML = figsHTML(P,4,false); api.choices(box, shuffle(P.exprs), {cols:1}); },
+      check:v=> v===P.expr ? true : `각 모양의 개수를 세어 보세요: ${[1,2,3,4].map(k=>P.f(k)).join(', ')}`,
+      solution:`${[1,2,3,4].map(k=>P.f(k)).join(', ')} → <b>${P.expr}</b>` };
+  }
+  const ans = P.f(10);
+  return { kicker:'★ 영재 도전', title:'그리지 않고 예측해요! <em>열째</em> 모양에는 몇 개가 있을까요?',
+    say:'열째까지 그리면 너무 오래 걸려요. 규칙을 식으로 바꾸면 바로 예측할 수 있어요. AI도 이렇게 해요!',
+    render(box, api){ box.innerHTML = figsHTML(P,4,false); api.input(box, {placeholder:'개수', unit:'개'}); },
+    check:v=> v===ans ? true : `식으로 생각해 보세요: ${P.expr} → 열째는?`,
+    solution:`${P.expr} 규칙으로 열째는 <b>${ans}개</b>예요.` };
+}
+
+/* ---------- 미션 4: 저울 섬 (등호) ---------- */
+function scaleSVG(Ltxt, Rtxt, tilt){
+  const ang = Math.max(-16, Math.min(16, tilt));
+  const pan = (x, txt, side) => { const dy = (side==='L'?-1:1) * Math.sin(ang*Math.PI/180) * 170; return `<g class="pan" style="transform:translate(0px,${dy}px)">
+      <line x1="${x}" y1="122" x2="${x-62}" y2="232" stroke="#8a5a1a" stroke-width="3"/><line x1="${x}" y1="122" x2="${x+62}" y2="232" stroke="#8a5a1a" stroke-width="3"/>
+      <path d="M${x-92} 232 Q${x} 292 ${x+92} 232 Z" fill="url(#panG)" stroke="#b77400" stroke-width="3"/>
+      <rect x="${x-80}" y="196" width="160" height="38" rx="12" fill="#fff" stroke="#ffd9c9" stroke-width="2"/><text x="${x}" y="223" text-anchor="middle">${txt}</text></g>`; };
+  return `<svg class="scale-svg" viewBox="0 0 560 330" aria-label="양팔 저울"><defs>
+      <linearGradient id="goldG" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ffe7a1"/><stop offset="1" stop-color="#e3a21a"/></linearGradient>
+      <linearGradient id="panG" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff2c4"/><stop offset="1" stop-color="#f0b429"/></linearGradient>
+      <linearGradient id="baseG" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ff9a6b"/><stop offset="1" stop-color="#c23a17"/></linearGradient></defs>
+    <rect x="272" y="120" width="16" height="170" rx="6" fill="url(#goldG)"/>
+    <path d="M200 312 Q280 270 360 312 Z" fill="url(#baseG)"/><rect x="190" y="306" width="180" height="16" rx="8" fill="#c23a17"/>
+    <g class="beam" style="transform:rotate(${ang}deg)"><rect x="100" y="112" width="360" height="16" rx="8" fill="url(#goldG)" stroke="#b77400" stroke-width="2"/></g>
+    ${pan(100 + (1-Math.cos(ang*Math.PI/180))*180, Ltxt,'L')}${pan(460 - (1-Math.cos(ang*Math.PI/180))*180, Rtxt,'R')}
+    <circle cx="280" cy="120" r="14" fill="#ffc23d" stroke="#b77400" stroke-width="3"/>
+    <path d="M280 96 l8 14 h-16z" fill="${Math.abs(ang)<0.5?'#1fbf66':'#c23a17'}"/></svg>`;
+}
+function eqGen(kind){
+  if(kind==='add'){ const a=rand(5,30), b=rand(3,20), c=a+b+rand(1,12); const d=c-(a+b); return {L:`${a} + ${b}`, Lv:a+b, R:(x)=>`${c} − ${x}`, Rv:x=>c-x, ans:d, show:`${a} + ${b} = ${c} − □`}; }
+  if(kind==='sub'){ const a=rand(10,30), b=rand(2,9), c=rand(a-b+2, a-b+20); const d=c-(a-b); return {L:`${a} − ${b}`, Lv:a-b, R:(x)=>`${c} − ${x}`, Rv:x=>c-x, ans:d, show:`${a} − ${b} = ${c} − □`}; }
+  if(kind==='mul'){ const p=pick([[3,6,9,2],[4,6,8,3],[2,12,6,4],[6,4,8,3],[5,6,10,3],[4,9,6,6]]); return {L:`${p[0]} × ${p[1]}`, Lv:p[0]*p[1], R:(x)=>`${p[2]} × ${x}`, Rv:x=>p[2]*x, ans:p[3], show:`${p[0]} × ${p[1]} = ${p[2]} × □`}; }
+  const q=rand(2,9), a=q*rand(2,6); const b=pick([2,3]); return {L:`${a*b} ÷ ${b}`, Lv:a, R:(x)=>`${x} ÷ ${b*2}`, Rv:x=>x/(b*2), ans:a*b*2, show:`${a*b} ÷ ${b} = □ ÷ ${b*2}`};
+}
+function m4(i){
+  if(i===2||i===4){
+    const items = [
+      {e:'5 − 2 = 9 − 6', ok:true}, {e:'3 × 6 = 9 × 2', ok:true}, {e:'11 + 8 = 20 − 1', ok:true},
+      {e:'12 + 5 = 20 − 4', ok:false, why:'12 + 5 = 17, 20 − 4 = 16이라 양쪽이 달라요.'}, {e:'4 × 6 = 3 × 9', ok:false, why:'4 × 6 = 24, 3 × 9 = 27이라 양쪽이 달라요.'},
+      {e:'36 ÷ 4 = 18 ÷ 2', ok:true}, {e:'15 − 7 = 4 × 3', ok:false, why:'15 − 7 = 8, 4 × 3 = 12라 양쪽이 달라요.'}, {e:'25 + 25 = 100 ÷ 2', ok:true}
+    ];
+    const it = pick(items);
+    const [l,r] = it.e.split(' = ');
+    const val = s => { const m = s.match(/(\d+) (.) (\d+)/); return calc(+m[1], m[2], +m[3]); };
+    return { kicker:'옳은 식일까?', title:`<em>${it.e}</em> 는 옳은 식인가요?`,
+      say:'등호(=)는 양쪽의 크기가 <b>같다</b>는 뜻이에요. 양쪽을 따로 계산해서 비교해 봐요.',
+      render(box, api){ box.innerHTML = scaleSVG(l, r, (val(r)-val(l))*2); api.choices(box, [{label:'O 옳은 식', value:true},{label:'X 옳지 않은 식', value:false}], {cols:2}); },
+      check:v=> v===it.ok ? true : '양쪽을 각각 계산해서 같은지 확인해 보세요.',
+      solution: it.ok ? `${l} = ${val(l)}, ${r} = ${val(r)} → 양쪽이 같으니 <b>옳은 식</b>이에요.` : `${it.why} 그래서 <b>옳지 않은 식</b>이에요.` };
+  }
+  const E = eqGen(['mul','add','div'][i===0?0:i===1?1:2] || pick(['add','sub','mul','div']));
+  return { kicker:'저울 섬 · 등호', title:`저울이 수평이 되도록 <em>□</em>에 알맞은 수를 찾으세요.`,
+    say: i===0 ? '저울 섬이에요! 양쪽 접시의 값이 같아지면 저울이 수평이 돼요. ±로 바꾸면서 저울을 관찰해 봐요.' : null,
+    render(box, api){
+      let x = 1;
+      box.innerHTML = `<div class="eq-big">${E.show}</div><div id="sc">${scaleSVG(E.L, E.R(x), (E.Rv(x)-E.Lv)*2)}</div>
+        <div class="sq-row"><button class="adj" type="button" data-d="-1">−</button><input class="ans" id="sqv" inputmode="numeric" value="1" aria-label="□의 값"><button class="adj" type="button" data-d="1">+</button><button class="jbtn sm" type="button" id="sqOk">수평 확인</button></div>`;
+      const sc = box.querySelector('#sc'), inp = box.querySelector('#sqv');
+      const draw = ()=>{ x = Math.max(0, api.num(inp.value)||0); sc.innerHTML = scaleSVG(E.L, E.R(x), (E.Rv(x)-E.Lv)*2); };
+      box.querySelectorAll('.adj').forEach(b=>b.onclick=()=>{ if(api.locked) return; inp.value = Math.max(0,(api.num(inp.value)||0) + +b.dataset.d); draw(); Game.Sound.tick(); });
+      inp.addEventListener('input', draw); inp.addEventListener('keydown', e=>{ if(e.key==='Enter'&&!e.isComposing) api.submit(api.num(inp.value)); });
+      box.querySelector('#sqOk').onclick = ()=>api.submit(api.num(inp.value));
+    },
+    check:v=>{ if(v===E.ans) return true; const d = E.Rv(v) - E.Lv; return d>0 ? '오른쪽이 더 무거워요(값이 커요). 오른쪽 값을 줄여 보세요.' : '왼쪽이 더 무거워요(값이 커요). 오른쪽 값을 키워 보세요.'; },
+    after(box){ const sc=document.querySelector('.q-box #sc'); if(sc){ sc.innerHTML = scaleSVG(E.L, E.R(E.ans), 0); sc.classList.add('level-ok'); } box.innerHTML = `<div class="eq-big" style="color:var(--good)">${E.L} = ${E.R(E.ans)}</div>`; },
+    solution:`왼쪽 ${E.L} = ${E.Lv}. 오른쪽도 ${E.Lv}이 되어야 하므로 □ = <b>${E.ans}</b>` };
+}
+
+/* ---------- 미션 5: 데이터 연구소 (막대그래프) ---------- */
+const DATASETS = [
+  {title:'좋아하는 색깔별 학생 수', cat:'색깔', unit:'명', items:[['빨강',6,'#e5484d'],['노랑',4,'#f5b301'],['초록',12,'#12a150'],['파랑',8,'#2f80ed']], src:'교과서 116쪽'},
+  {title:'가고 싶은 체험 학습 장소별 학생 수', cat:'장소', unit:'명', items:[['과학관',10,'#7c5cff'],['놀이공원',12,'#f2542d'],['박물관',4,'#0aa3c9'],['숲 체험',6,'#12a150']], src:'우리 반 조사'}
+];
+function graphSVG(D, vals, scale, opt={}){
+  const n=D.items.length, cells=6, W=420, H=300, ml=56, mb=46, mt=34, plotH=H-mb-mt, plotW=W-ml-16;
+  const horiz = !!opt.horiz; let s=`<text class="t" x="${W/2}" y="22" text-anchor="middle">${opt.noTitle?'':D.title}</text>`;
+  if(!horiz){
+    for(let k=0;k<=cells;k++){ const y=H-mb-plotH*k/cells; s+=`<line x1="${ml}" y1="${y}" x2="${W-16}" y2="${y}" stroke="${k?'#f3e3dc':'#4b3a33'}" stroke-width="${k?1:2}"/>`; if(scale && (k%(opt.every||1)===0)) s+=`<text x="${ml-8}" y="${y+4}" text-anchor="end">${k*scale}</text>`; }
+    s+=`<line x1="${ml}" y1="${mt-6}" x2="${ml}" y2="${H-mb}" stroke="#4b3a33" stroke-width="2"/><text x="${ml-8}" y="${mt-12}" text-anchor="end">(${D.unit})</text>`;
+    const bw = plotW/n*0.56;
+    D.items.forEach(([name,,col],k)=>{ const cx = ml + plotW*(k+.5)/n; const v = vals[k]||0; const h = scale? Math.min(plotH, plotH*v/(scale*cells)) : 0; s+=`<rect class="gbar" x="${cx-bw/2}" y="${H-mb-h}" width="${bw}" height="${h}" rx="6" fill="${col}"/><text x="${cx}" y="${H-mb+20}" text-anchor="middle">${name}</text>`; });
+  } else {
+    const plotW2 = W-ml-40, top=mt, rowH=(H-mb-mt)/n;
+    for(let k=0;k<=cells;k++){ const x=ml+20+plotW2*k/cells; s+=`<line x1="${x}" y1="${top}" x2="${x}" y2="${H-mb}" stroke="${k?'#f3e3dc':'#4b3a33'}" stroke-width="${k?1:2}"/>`; if(scale) s+=`<text x="${x}" y="${H-mb+18}" text-anchor="middle">${k*scale}</text>`; }
+    D.items.forEach(([name,,col],k)=>{ const cy = top + rowH*(k+.5); const v=vals[k]||0; const w = scale? plotW2*v/(scale*cells):0; s+=`<rect class="gbar" x="${ml+20}" y="${cy-rowH*0.28}" width="${w}" height="${rowH*0.56}" rx="6" fill="${col}"/><text x="${ml+12}" y="${cy+4}" text-anchor="end">${name}</text>`; });
+  }
+  return `<svg class="graph" viewBox="0 0 ${W} ${H}" aria-label="막대그래프">${s}</svg>`;
+}
+function dataTable(D){ return `<table class="data"><tr><th>${D.cat}</th>${D.items.map(x=>`<th>${x[0]}</th>`).join('')}<th>합계</th></tr><tr><td>${D.unit==='명'?'학생 수(명)':''}</td>${D.items.map(x=>`<td>${x[1]}</td>`).join('')}<td>${D.items.reduce((a,x)=>a+x[1],0)}</td></tr></table>`; }
+function m5(i, ctx){
+  const D = ctx.D || (ctx.D = pick(DATASETS)); const vals = D.items.map(x=>x[1]); const mx = Math.max(...vals); const scale = Math.ceil(mx/6) <= 2 ? 2 : Math.ceil(mx/6);
+  if(i===0){
+    return { kicker:`데이터 연구소 · ${D.src}`, title:'세로 눈금은 6칸이에요. <em>눈금 한 칸</em>은 몇 명으로 하면 좋을까요?',
+      say:'데이터 연구소예요! AI도 데이터를 그래프로 정리해서 살펴봐요. 먼저 눈금을 정해요.',
+      render(box, api){ box.innerHTML = `${dataTable(D)}<p style="font-size:14px;color:var(--ink-2);margin:8px 0">가장 큰 수: <b>${mx}명</b></p><div style="max-width:460px;margin:0 auto 12px">${graphSVG(D, [], 0)}</div>`; api.choices(box, [1,2,5].map(v=>({label:`한 칸 = ${v}명`, value:v})), {cols:3}); },
+      check:v=>{ if(v===scale) return true; if(v*6<mx) return `한 칸이 ${v}명이면 6칸으로 ${v*6}명까지만 나타낼 수 있어요. 가장 큰 수 ${mx}명까지 나타내야 해요.`; return `한 칸이 ${v}명이면 ${D.items.find(x=>x[1]%v)?.[0]||''}처럼 칸 사이에 걸치는 막대가 생겨 읽기 어려워요.`; },
+      after(box){ const g=document.querySelector('.q-box .graph'); if(g){ const w=document.createElement('div'); w.innerHTML=graphSVG(D, [], scale); g.replaceWith(w.firstElementChild); } },
+      solution:`가장 큰 수 ${mx}명을 6칸에 나타내야 하므로 한 칸 = <b>${scale}명</b>이 알맞아요. (${scale} × 6 = ${scale*6})` };
+  }
+  if(i===1){
+    return { kicker:'막대그래프로 나타내기', title:'표를 보고 막대의 길이를 알맞게 맞추세요.',
+      say:'막대 옆의 +, − 를 눌러 표의 수와 같게 만들어요. 한 칸이 몇 명인지 잊지 마세요!',
+      render(box, api){
+        const cur = D.items.map(()=>0);
+        box.innerHTML = `${dataTable(D)}<div class="gwrap" style="margin-top:12px"><div><div class="bar-ctl">${D.items.map((x,k)=>`<div class="bc"><span>${x[0]}</span><button type="button" data-k="${k}" data-d="-1" aria-label="${x[0]} 줄이기">−</button><b id="bv${k}">0</b><button type="button" data-k="${k}" data-d="1" aria-label="${x[0]} 늘리기">+</button></div>`).join('')}</div></div><div id="gph">${graphSVG(D, cur, scale)}</div></div><div class="next-row"><button class="jbtn sm" type="button" id="gOk">그래프 완성!</button></div>`;
+        const g = box.querySelector('#gph');
+        box.querySelectorAll('.bar-ctl button').forEach(b=>b.onclick=()=>{ if(api.locked) return; const k=+b.dataset.k; cur[k] = Math.max(0, Math.min(scale*6, cur[k] + (+b.dataset.d)*(scale>=2?1:1))); box.querySelector('#bv'+k).textContent = cur[k]; g.innerHTML = graphSVG(D, cur, scale); Game.Sound.tick(); });
+        box.querySelector('#gOk').onclick = ()=>api.submit(cur.join(','));
+      },
+      check:v=>{ const c = String(v).split(',').map(Number); const bad = D.items.findIndex((x,k)=>c[k]!==x[1]); if(bad<0) return true; return `${D.items[bad][0]} 막대가 ${c[bad]}명이에요. 표에서는 ${D.items[bad][1]}명이에요. 눈금 한 칸이 ${scale}명이니 ${D.items[bad][1]/scale}칸이어야 해요.`; },
+      solution:`${graphSVG(D, vals, scale)}표의 수만큼 막대를 그려요. 한 칸이 ${scale}명이므로 예를 들어 ${D.items[0][0]} ${D.items[0][1]}명은 ${D.items[0][1]/scale}칸이에요.` };
+  }
+  if(i===2){
+    const top = D.items.reduce((a,b)=>b[1]>a[1]?b:a);
+    return { kicker:'그래프 읽기', title:`가장 많은 학생이 고른 ${D.cat}은(는) 무엇인가요?`,
+      render(box, api){ box.innerHTML = `<div style="max-width:460px;margin:0 auto 10px">${graphSVG(D, vals, scale)}</div><div style="text-align:right;margin:-4px 0 10px"><button class="mini-tog" type="button" id="tog">가로 막대로 바꿔 보기</button></div>`; let h=false; box.querySelector('#tog').onclick=()=>{ h=!h; box.querySelector('div').innerHTML = graphSVG(D, vals, scale, {horiz:h}); box.querySelector('#tog').textContent = h?'세로 막대로 바꿔 보기':'가로 막대로 바꿔 보기'; }; api.choices(box, shuffle(D.items.map(x=>x[0]))); },
+      check:v=> v===top[0] ? true : '막대그래프에서는 막대가 가장 긴 것이 가장 많아요.',
+      solution:`막대가 가장 긴 <b>${top[0]}</b>(${top[1]}명)이 가장 많아요.` };
+  }
+  if(i===3){
+    const s = D.items.slice().sort((a,b)=>b[1]-a[1]); const a = s[0], b = s[s.length-1];
+    return { kicker:'그래프 읽기', title:`<em>${a[0]}</em>은(는) <em>${b[0]}</em>보다 몇 명 더 많나요?`,
+      render(box, api){ box.innerHTML = `<div style="max-width:460px;margin:0 auto 10px">${graphSVG(D, vals, scale)}</div>`; api.input(box, {placeholder:'몇 명', unit:'명'}); },
+      check:v=> v===a[1]-b[1] ? true : `눈금 한 칸은 ${scale}명이에요. 두 막대의 칸 수 차이를 세고 ${scale}을(를) 곱해 보세요.`,
+      solution:`${a[0]} ${a[1]}명 − ${b[0]} ${b[1]}명 = <b>${a[1]-b[1]}명</b>` };
+  }
+  // 데이터가 바뀌면 AI의 대답도 바뀐다
+  const s = D.items.slice().sort((a,b)=>b[1]-a[1]); const top = s[0], second = s[1]; const add = top[1]-second[1] + 2;
+  const nv = D.items.map(x=>x[0]===second[0]? x[1]+add : x[1]);
+  return { kicker:'AI와 데이터', title:`<em>${second[0]}</em>에 ${add}명이 더 투표했어요. 패턴GPT의 대답은 어떻게 바뀔까요?`,
+    say:'AI는 데이터로 생각해요. 데이터가 바뀌면 AI의 대답도 바뀔까요?',
+    render(box, api){ box.innerHTML = `<div class="gwrap"><div>${aiCard(`가장 인기 있는 ${D.cat}은(는) ${top[0]}!`, 90, [`가장 긴 막대 = 가장 많음`])}</div><div>${graphSVG({...D, title:'새 데이터'}, nv, Math.max(scale, Math.ceil(Math.max(...nv)/6)))}</div></div>`; api.choices(box, [`그대로 ${top[0]}라고 한다`, `${second[0]}라고 바꾼다`, '대답하지 못한다']); },
+    check:v=> v===`${second[0]}라고 바꾼다` ? true : `새 그래프에서 가장 긴 막대를 보세요. ${second[0]}은(는) ${second[1]+add}명이에요.`,
+    solution:`${second[0]}이(가) ${second[1]+add}명으로 가장 많아졌어요. AI는 새 데이터로 다시 판단하니까 <b>${second[0]}</b>라고 대답을 바꿔요. 그래서 <b>데이터가 정확해야</b> AI도 정확해요!`,
+    praise:'데이터가 바뀌면 AI의 생각도 바뀌어요.' };
+}
+
+/* ---------- 미션 6: 패턴GPT를 이겨라 ---------- */
+function detect(a){
+  const n=a.length; if(n<3) return null; const d=a.slice(1).map((x,i)=>x-a[i]);
+  if(d.every(x=>x===d[0])) return {name:`${d[0]>=0?d[0]+'씩 커져요':(-d[0])+'씩 작아져요'} (같은 수 더하기)`, chip:(d[0]>=0?'+':'')+d[0], next:a[n-1]+d[0]};
+  if(a.every(x=>x!==0)){ const r=a[1]/a[0]; if(Number.isInteger(r) && r!==1 && a.slice(1).every((x,i)=>x===a[i]*r)) return {name:`${r}배씩 커져요 (같은 수 곱하기)`, chip:'×'+r, next:a[n-1]*r}; }
+  if(n>=4 && a.every(x=>x>0 && Number.isInteger(Math.sqrt(x))) && a.slice(1).every((x,i)=>Math.sqrt(x)===Math.sqrt(a[i])+1)) return {name:'같은 수를 두 번 곱한 수예요 (1×1, 2×2, …)', chip:'□×□', next:(Math.sqrt(a[n-1])+1)**2};
+  if(n>=4 && a.slice(2).every((x,i)=>x===a[i]+a[i+1])) return {name:'앞의 두 수를 더하면 다음 수예요', chip:'앞+앞', next:a[n-1]+a[n-2]};
+  if(n>=4){ const dd=d.slice(1).map((x,i)=>x-d[i]); if(dd.every(x=>x===dd[0]) && dd[0]!==0) return {name:`더하는 수가 ${dd[0]}씩 ${dd[0]>0?'커져요':'작아져요'}`, chip:'차이 '+(dd[0]>0?'+':'')+dd[0], next:a[n-1]+d[d.length-1]+dd[0]}; }
+  if(n>=4 && d[0]!==d[1] && d.every((x,i)=>x===d[i%2])) return {name:`${d[0]}, ${d[1]}을(를) 번갈아 더해요`, chip:`${d[0]}/${d[1]} 번갈아`, next:a[n-1]+d[(n-1)%2]};
+  return null;
+}
+window.__detect = detect;
+function m6(i, ctx){
+  ctx.win = ctx.win||0; ctx.lose = ctx.lose||0;
+  return { kicker:`★ AI 대결 · ${i+1}라운드`, title:'수를 4개 이상 써서 <em>패턴GPT</em>가 다음 수를 맞히는지 시험해 보세요!',
+    say: i===0 ? '자, 대결이에요! 규칙이 있는 수를 쓰면 제가 다음 수를 예측할게요. 저를 이길 수 있을까요? 예: 2, 5, 8, 11' : '다른 규칙으로 다시 도전!',
+    render(box, api){
+      box.innerHTML = `<div class="scorebar"><span>나 <b>${ctx.win}</b> 승</span><span>패턴GPT <b>${ctx.lose}</b> 승</span></div>
+        <div class="seq-in"><input class="ans" id="seq" inputmode="text" autocomplete="off" placeholder="예: 1, 3, 6, 10" aria-label="수열 입력"><button class="jbtn sm" type="button" id="seqGo">패턴GPT에게 보내기</button></div><div id="aiOut" style="margin-top:12px"></div>`;
+      const inp = box.querySelector('#seq'), out = box.querySelector('#aiOut');
+      let arr = [];
+      const parse = s => (s.match(/-?\d+/g)||[]).map(Number);
+      const think = async ()=>{
+        if(arr.length<4){ Game.toast('수를 4개 이상 써 주세요'); return; }
+        out.innerHTML = `<div class="ai-card"><img src="${robot}" alt=""><div><div class="lbl">패턴GPT가 생각하는 중…</div><div class="pred">${arr.join(', ')}, ?</div><div class="conf">규칙 찾는 중 <div class="cbar"><i style="width:30%"></i></div></div></div></div>`;
+        await new Promise(r=>setTimeout(r,800));
+        const R = detect(arr);
+        if(!R){
+          out.innerHTML = `<div class="ai-card"><img src="${robot}" alt=""><div style="min-width:0"><div class="lbl">패턴GPT의 대답</div><div class="pred">모르겠어요! 🤔</div><div style="font-size:14px">제가 아는 규칙(같은 수 더하기·곱하기, 제곱수, 앞 두 수 더하기, 차이가 커지기, 번갈아 더하기)에 없어요. 다음 수를 알려 주면 다시 생각해 볼게요.</div></div></div>
+            <div class="seq-in"><input class="ans" id="more" inputmode="numeric" placeholder="다음 수" style="width:160px" aria-label="다음 수"><button class="jbtn sm white" type="button" id="moreGo">알려 주기</button><button class="jbtn sm gold" type="button" id="giveUp">내가 이겼어!</button></div>`;
+          Game.say('제가 아직 모르는 규칙이에요! 다음 수를 알려 주면 배울게요.', 'think');
+          out.querySelector('#moreGo').onclick=()=>{ const v=parse(out.querySelector('#more').value)[0]; if(v==null) return; arr.push(v); inp.value = arr.join(', '); think(); };
+          out.querySelector('#giveUp').onclick=()=>{ ctx.win++; ctx.last='win'; api.submit('done'); };
+          return;
+        }
+        const conf = Math.min(97, 58 + (arr.length-3)*12);
+        out.innerHTML = `${aiCard(`${arr.join(', ')}, <span style="color:#ffc23d">${R.next}</span>`, conf, [R.name])}
+          <p style="font-weight:800;margin:0 0 8px">패턴GPT의 예측이 내가 생각한 다음 수와 같나요?</p>
+          <div class="seq-in"><button class="jbtn sm white" type="button" id="aiRight">맞았어 (패턴GPT 승)</button><input class="ans" id="real" inputmode="numeric" placeholder="진짜 다음 수" style="width:170px" aria-label="진짜 다음 수"><button class="jbtn sm gold" type="button" id="aiWrong">틀렸어!</button></div>`;
+        Game.say(`찾았어요! 규칙은 <b>${R.name}</b> 그래서 다음 수는 <b>${R.next}</b>!`, 'cheer');
+        out.querySelector('#aiRight').onclick=()=>{ ctx.lose++; ctx.last='lose'; api.submit('done'); };
+        out.querySelector('#aiWrong').onclick=()=>{ const v=parse(out.querySelector('#real').value)[0]; if(v==null){ Game.toast('진짜 다음 수를 써 주세요'); return; } if(v===R.next){ Game.toast('그 수는 패턴GPT의 예측과 같아요!'); return; } ctx.win++; ctx.last='win'; ctx.lastRule = R.name; api.submit('done'); };
+      };
+      box.querySelector('#seqGo').onclick=()=>{ arr = parse(inp.value); think(); };
+      inp.addEventListener('keydown', e=>{ if(e.key==='Enter'&&!e.isComposing){ arr = parse(inp.value); think(); } });
+    },
+    check:()=>true,
+    get praise(){ return ctx.last==='win' ? 'AI를 이겼어요! 같은 수로 시작해도 규칙은 여러 가지일 수 있어요. 그래서 AI의 예측은 언제나 확인이 필요해요.' : '패턴GPT가 맞혔네요! 하지만 다음 라운드에서는 더 어려운 규칙으로 도전해 봐요.'; } };
+}
+
+Game.init({
+  key:'pattern', name:'패턴 AI 연구소', gpt:'패턴GPT', bg:A+'bg_lab.webp', hero:A+'suri_lab.webp', badge:A+'badge_pattern.webp', badgeTitle:'패턴 연구원',
+  kicker:'4학년 1학기 · 막대그래프 · 규칙과 관계',
+  sub:'연구원 로봇 수리와 함께 수와 모양 속 규칙을 찾고, 데이터를 그래프로 정리해요. AI가 틀린 예측도 잡아내 봐요!',
+  units:['5단원 막대그래프','6단원 규칙과 관계','AI와 데이터'],
+  faces:{happy:A+'suri_happy.webp', wow:A+'suri_wow.webp', think:A+'suri_think.webp', cheer:A+'suri_cheer.webp'},
+  missions:[
+    {id:'numbers', name:'숫자 섬', short:'수 배열의 규칙', icon:A+'lab/island.webp', pos:[12,70], count:5, gen:m1,
+     intro:'숫자 섬에 도착! 수 배열표에서 <b>가로(→)</b>와 <b>세로(↓)</b> 규칙을 찾아요.', recap:'수 배열은 가로, 세로, 대각선 방향으로 얼마씩 변하는지 보면 규칙이 보여요. 규칙은 식으로 나타낼 수 있어요.'},
+    {id:'calc', name:'AI 오류 찾기', short:'계산식 배열과 예측', icon:A+'lab/magnifier.webp', pos:[28,40], count:5, gen:m2,
+     intro:'계산식 배열의 규칙으로 결과를 <b>예측</b>해요. 그리고 패턴GPT의 예측이 맞는지 검사해요!', recap:'규칙으로 예측할 수 있지만, 규칙이 언제까지 맞는지 꼭 확인해야 해요. AI도 틀릴 수 있어요!'},
+    {id:'shapes', name:'도형 섬', short:'모양의 배열', icon:A+'lab/rainbow.webp', pos:[45,68], count:4, gen:m3,
+     intro:'모양이 커지는 규칙을 찾아 다음 모양을 <b>그리지 않고</b> 예측해 봐요.', recap:'모양의 배열은 개수 규칙을 식(2, 2+2, …)으로 나타내면 열째도 바로 예측할 수 있어요.'},
+    {id:'balance', name:'저울 섬', short:'등호와 같은 양', icon:A+'lab/scale.webp', pos:[61,36], count:5, gen:m4,
+     intro:'<b>등호(=)</b>는 양쪽 크기가 같다는 뜻이에요. 저울이 수평이 되게 만들어 봐요.', recap:'3 × 6 = 9 × 2처럼 크기가 같은 두 양은 등호로 나타내요. 저울이 수평이면 옳은 식!'},
+    {id:'data', name:'데이터 연구소', short:'막대그래프', icon:A+'lab/chart.webp', pos:[77,64], count:5, gen:m5,
+     intro:'조사한 자료를 막대그래프로 나타내고 읽어요. 그리고 데이터가 바뀌면 AI의 대답이 어떻게 되는지 봐요.', recap:'막대그래프는 눈금 한 칸의 크기를 정하고, 막대 길이로 수량을 나타내요. 데이터가 바뀌면 AI의 판단도 바뀌어요.'},
+    {id:'battle', name:'★ 패턴GPT를 이겨라', short:'AI와 규칙 대결', icon:A+'lab/bulb.webp', pos:[89,30], count:3, gen:m6, boss:true,
+     stars:(m,ctx)=> ctx.win>0 ? 3 : 2,
+     intro:'마지막 도전! 나만의 규칙으로 수를 만들어 패턴GPT를 이겨 보세요. 한 번이라도 이기면 별 3개!', recap:'AI는 아는 규칙(데이터) 안에서만 예측해요. 사람은 새로운 규칙을 만들 수 있어요!'}
+  ],
+  blueprint:[
+    ['이름','패턴 AI 연구소 (도우미: 패턴GPT)'],
+    ['누구를 위해','규칙 찾기와 막대그래프를 공부하며 AI가 예측하는 방법을 알고 싶은 4학년'],
+    ['목표','[4수02-01·02·03] 규칙을 수나 식으로 나타내기, 계산식 배열에서 결과 추측, 등호 · [4수04-01·03] 막대그래프로 나타내고 해석'],
+    ['입력','수 쓰기, O/X 고르기, 저울 ± 버튼, 막대 길이 조절, 나만의 수열 만들기'],
+    ['규칙','<div class="rule"><b>만약</b> 수들의 차이가 모두 같음 → “같은 수씩 커져요” + 다음 수 예측</div><div class="rule"><b>만약</b> 맞는 예시가 많음 → 확신도 올리기</div><div class="rule"><b>만약</b> 아무 규칙도 안 맞음 → “모르겠어요, 알려 주세요”</div><div class="rule"><b>만약</b> 저울 양쪽 값이 같음 → 수평 + 성공</div><div class="rule"><b>만약</b> 데이터가 바뀜 → 가장 긴 막대를 다시 찾아 대답 바꾸기</div>'],
+    ['출력','패턴GPT 예측 카드(찾은 규칙·확신도), 기울어지는 저울, 막대그래프, 수리의 말풍선'],
+    ['디자인','ChatGPT로 그린 바다 위 연구소와 캐릭터, 코랄색 강조, AI 예측 카드는 보라색 화면']
+  ]
+});
+})();
+</script>
+</body>
+</html>

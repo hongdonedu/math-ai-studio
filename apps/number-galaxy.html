@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>넘버 갤럭시</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700;900&family=Fredoka:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/game.css">
+<style>
+body{--accent:#7c5cff;--accent-2:#b59bff;--accent-dark:#4f2fd0;--accent-soft:#ece6ff;--night:#120b33;--veil:linear-gradient(180deg,rgba(18,11,51,.05),rgba(18,11,51,.55))}
+/* 자릿값 판: 네 자리씩(조·억·만·일) 색띠로 묶음 */
+.pv{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:3px;border-radius:18px;padding:8px;background:#1b1446;box-shadow:inset 0 0 0 2px rgba(255,255,255,.08)}
+.pv .h,.pv .d{text-align:center;border-radius:9px;padding:4px 0}
+.pv .h{font-size:clamp(10px,1.3vw,13px);font-weight:800;color:#d9d2ff;white-space:nowrap;overflow:hidden}
+.pv .d{font-family:var(--f-num);font-weight:700;font-size:clamp(18px,3vw,32px);color:#fff;min-height:1.6em;display:grid;place-items:center;transition:background .3s,transform .3s}
+.pv .g3{background:rgba(255,194,61,.22)} .pv .g2{background:rgba(124,92,255,.38)} .pv .g1{background:rgba(76,201,240,.25)} .pv .g0{background:rgba(255,255,255,.1)}
+.pv .d.on{animation:digitIn .5s cubic-bezier(.2,.9,.25,1.4) both}
+.pv .d.hl{background:var(--gold)!important;color:#3d2400;transform:scale(1.12);box-shadow:0 0 0 3px #fff,0 0 22px rgba(255,194,61,.9)}
+.pv .d.ask{box-shadow:0 0 0 3px var(--gold);animation:digitIn .5s both,askPulse 1.2s .6s ease-in-out infinite}
+@keyframes askPulse{50%{box-shadow:0 0 0 3px var(--gold),0 0 18px rgba(255,194,61,.9)}}
+.pv .d.diff{background:#ff6b8a!important;box-shadow:0 0 0 3px #fff}
+@keyframes digitIn{from{opacity:0;transform:translateY(-12px) scale(.6)}}
+.pv-legend{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:700;color:var(--ink-2);margin-top:8px}
+.pv-legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:4px;vertical-align:-1px}
+.gn{font-family:var(--f-num);font-weight:700;letter-spacing:.02em}
+.gn .grp{padding:0 .08em}
+.gn .grp+.grp{margin-left:.22em}
+.gn .g3{color:#c98200} .gn .g2{color:var(--accent-dark)} .gn .g1{color:#0a8bb5} .gn .g0{color:var(--ink)}
+.read-card{font-family:var(--f-title);font-size:clamp(22px,3vw,30px);background:var(--paper-2);border-radius:18px;padding:12px 18px;display:inline-block;color:var(--accent-dark)}
+/* 워프 항로 */
+.track{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;padding:46px 6px 10px;border-radius:22px;background:radial-gradient(120% 140% at 50% 0%,#33246e,#120b33);overflow:hidden}
+.track::before{content:"";position:absolute;left:8%;right:8%;top:calc(46px + 34px);height:4px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.7) 0 10px,transparent 10px 20px)}
+.stop{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px}
+.stop .pl{width:68px;height:68px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0 8%,#b59bff 9%,#5b3fd8 70%);box-shadow:0 0 20px rgba(181,155,255,.6);display:grid;place-items:center}
+.stop:nth-child(2n) .pl{background:radial-gradient(circle at 35% 30%,#fff 0 8%,#7fe0ff 9%,#1572b8 70%)}
+.stop:nth-child(3n) .pl{background:radial-gradient(circle at 35% 30%,#fff 0 8%,#ffd27a 9%,#d26a1b 70%)}
+.stop .v{font-family:var(--f-num);font-weight:700;color:#fff;font-size:clamp(15px,2vw,20px);background:rgba(0,0,0,.35);border-radius:10px;padding:2px 8px;white-space:nowrap}
+.stop.blank .v{background:var(--gold);color:#3d2400}
+.ship{position:absolute;top:4px;width:62px;height:62px;transition:left .9s cubic-bezier(.5,0,.3,1);filter:drop-shadow(0 6px 10px rgba(0,0,0,.5));transform:rotate(45deg)}
+/* 탐사선 카드 */
+.probes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.probe{border:3px solid var(--line);background:#fff;border-radius:22px;padding:12px 10px 14px;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;box-shadow:0 5px 0 rgba(40,30,110,.12);transition:transform .15s,border-color .15s}
+.probe img{height:110px;object-fit:contain;filter:drop-shadow(0 8px 10px rgba(0,0,0,.25))}
+.probe b{font-family:var(--f-title);font-weight:400;font-size:22px}
+.probe span{font-size:14px;color:var(--ink-2);font-weight:700}
+.probe .cost{font-family:var(--f-num);font-weight:700;font-size:17px;color:var(--accent-dark);text-align:center;line-height:1.3}
+.probe .ord{position:absolute;top:-12px;right:-8px;width:40px;height:40px;border-radius:50%;background:var(--gold);color:#3d2400;font-family:var(--f-num);font-weight:700;font-size:22px;display:grid;place-items:center;border:3px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.3)}
+.probe.picked{border-color:var(--accent);transform:translateY(-4px)}
+.src{font-size:12px;color:var(--ink-3);margin-top:8px}
+.cmp-row{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:6px 0 14px}
+.cmp-row .gn{font-size:clamp(22px,3.6vw,40px)}
+.cmp-row .box{width:64px;height:64px;border-radius:18px;border:3px dashed var(--accent);display:grid;place-items:center;font-family:var(--f-num);font-size:36px;font-weight:700;color:var(--accent-dark)}
+/* 곱셈·나눗셈 */
+.story{display:flex;gap:16px;align-items:center}
+.story img{width:120px;height:120px;object-fit:contain;flex:none;filter:drop-shadow(0 8px 10px rgba(0,0,0,.25))}
+.story p{margin:0;font-size:18px;line-height:1.7}
+.story p b{color:var(--accent-dark);font-family:var(--f-num);font-size:1.15em}
+.area{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.area .bar{display:flex;height:46px;border-radius:12px;overflow:hidden;font-family:var(--f-num);font-weight:700;color:#fff;font-size:15px}
+.area .bar div{display:grid;place-items:center;white-space:nowrap;overflow:hidden;padding:0 6px}
+.qr-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.qr-row label{font-weight:800;color:var(--ink-2)}
+.check-eq{font-family:var(--f-num);font-weight:700;font-size:clamp(20px,3vw,30px);background:var(--paper-2);border-radius:16px;padding:10px 16px;display:inline-block;margin-top:8px}
+.crates{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;align-items:flex-end}
+.crates img{width:34px;height:34px;object-fit:contain;animation:digitIn .4s both}
+.crates .left{font-weight:800;color:var(--bad);margin-left:8px;font-size:15px}
+/* 수 카드 */
+.cards{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+.ncard{width:66px;height:88px;border-radius:16px;border:0;background:linear-gradient(160deg,#fff,#ece6ff);box-shadow:0 5px 0 #b9a8f5,0 10px 18px -8px rgba(0,0,0,.4);font-family:var(--f-num);font-weight:700;font-size:40px;color:var(--accent-dark);transition:transform .12s,opacity .2s}
+.ncard:active{transform:translateY(4px)}
+.ncard.used{opacity:.25;pointer-events:none}
+.slots{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap}
+.slot{width:60px;height:80px;border-radius:14px;border:3px dashed var(--accent);background:rgba(255,255,255,.7);font-family:var(--f-num);font-weight:700;font-size:38px;color:var(--ink);display:grid;place-items:center}
+.slot.full{border-style:solid;background:#fff}
+.slots .op{font-family:var(--f-num);font-size:40px;font-weight:700;color:var(--ink-2);padding:0 4px}
+.live{text-align:center;margin-top:12px;font-weight:800;font-size:18px;color:var(--ink-2);min-height:1.6em}
+.live b{color:var(--accent-dark);font-family:var(--f-num);font-size:1.3em}
+.ai-scan{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:3px;margin-top:10px;max-height:150px;overflow:auto;font-family:var(--f-num);font-size:12px}
+.ai-scan span{white-space:nowrap;background:var(--paper-2);border-radius:6px;padding:2px 4px;text-align:center;animation:digitIn .3s both}
+.ai-scan span.best{background:var(--gold);color:#3d2400;font-weight:700}
+@media (max-width:560px){
+  .probes{grid-template-columns:1fr}
+  .probe{flex-direction:row;justify-content:flex-start;gap:12px;text-align:left}
+  .probe img{height:64px;width:64px}
+  .probe .cost{text-align:left}
+  .stop .pl{width:44px;height:44px}
+  .track{padding-top:40px}
+  .track::before{top:calc(40px + 22px)}
+  .ship{width:44px;height:44px}
+  .story img{width:76px;height:76px}
+  .ncard{width:54px;height:74px;font-size:32px}
+  .slot{width:48px;height:66px;font-size:30px}
+}
+</style>
+</head>
+<body>
+<script src="../assets/game.js"></script>
+<script>
+(function(){
+const {rand, pick, shuffle, esc} = Game;
+const A = '../assets/';
+const COLS = ['조','천억','백억','십억','억','천만','백만','십만','만','천','백','십','일'];
+const GRP = c => c===0?3 : c<=4?2 : c<=8?1 : 0;
+
+/* ---------- 큰 수 도구 ---------- */
+const D = ['','일','이','삼','사','오','육','칠','팔','구'], SU = ['','십','백','천'], BU = ['','만','억','조'];
+function read(n){ // 한글 읽기 (교과서식: 10000 → 만)
+  if(n===0) return '영';
+  const s = String(n), groups = [];
+  for(let i=s.length; i>0; i-=4) groups.unshift(s.slice(Math.max(0,i-4), i));
+  const parts = [];
+  groups.forEach((g, gi)=>{
+    const big = groups.length-1-gi, v = +g; if(!v) return;
+    let t = ''; const gs = g.padStart(4,'0');
+    for(let k=0;k<4;k++){ const d=+gs[k], u=3-k; if(!d) continue; t += (d===1 && u>0 ? '' : D[d]) + SU[u]; }
+    if(big===1 && v===1) t = '';
+    parts.push(t + BU[big]);
+  });
+  return parts.join(' ');
+}
+function parseK(s){ // "55만", "1조 2000억", "47조" 같은 혼합 표기도 읽기
+  s = String(s).replace(/[,\s원개]/g,'');
+  if(!/[조억만]/.test(s)) return s===''?NaN:Number(s.replace(/[^0-9.\-]/g,''));
+  let total = 0, m;
+  const re = /(\d*)(조|억|만)/g; let last = 0;
+  while((m = re.exec(s))){ const v = m[1]===''?1:+m[1]; total += v * ({'조':1e12,'억':1e8,'만':1e4})[m[2]]; last = re.lastIndex; }
+  const rest = s.slice(last); if(rest) total += +rest.replace(/\D/g,'')||0;
+  return total;
+}
+function fmtK(n){ // 52만, 1조 9572억 처럼
+  const units = [[1e12,'조'],[1e8,'억'],[1e4,'만']]; let out=[], r=n;
+  for(const [u,name] of units){ const q=Math.floor(r/u); if(q){ out.push(q+name); r-=q*u; } }
+  if(r) out.push(String(r)); return out.join(' ')||'0';
+}
+function gn(n){ // 네 자리 묶음 색 표시
+  const s = String(n), out=[]; let gi=0;
+  for(let i=s.length;i>0;i-=4){ out.unshift(`<span class="grp g${Math.min(gi,3)}">${s.slice(Math.max(0,i-4),i)}</span>`); gi++; }
+  return `<span class="gn">${out.join('')}</span>`;
+}
+function pv(n, opt={}){
+  const s = String(n).padStart(13,' ');
+  let h = COLS.map((c,i)=>`<div class="h">${c}</div>`).join('');
+  h += [...s].map((ch,i)=>`<div class="d g${GRP(i)} ${ch!==' '?'on':''} ${opt.hl===i?'hl':''} ${opt.diff===i?'diff':''} ${opt.ask===i?'ask':''}" style="animation-delay:${(i-(13-String(n).length))*0.06}s">${ch===' '?'':ch}</div>`).join('');
+  return `<div class="pv" aria-label="자릿값 판">${h}</div>`;
+}
+const legend = `<div class="pv-legend"><span><i style="background:rgba(255,194,61,.6)"></i>조</span><span><i style="background:rgba(124,92,255,.7)"></i>억</span><span><i style="background:rgba(76,201,240,.6)"></i>만</span><span><i style="background:#c9c6dc"></i>일</span><span>— 네 자리씩 끊어 읽어요</span></div>`;
+function randBig(minLen, maxLen){ const len = rand(minLen,maxLen); let s = String(rand(1,9)); for(let i=1;i<len;i++) s += (Math.random()<.3?'0':String(rand(0,9))); return Number(s); }
+
+/* ---------- 미션 1: 자릿값 해독기 ---------- */
+function m1(i){
+  const type = ['value','read','concept','value','write','concept'][i];
+  if(type==='value'){
+    let n, idx, d; do{ n = randBig(8,13); const s=String(n); idx = rand(0, s.length-3); d = +s[idx]; }while(!d || String(n).split(String(d)).length!==2);
+    const s = String(n), place = s.length-1-idx, val = d*Math.pow(10,place), col = 13 - s.length + idx;
+    const opts = shuffle([val, val*10, val/10, val*100].filter(v=>v>=1)).slice(0,4);
+    return { kicker:'자릿값', title:`반짝이는 숫자 <em>${d}</em>, 얼마를 나타낼까요?`,
+      render(box, api){ box.innerHTML = `<div style="margin-bottom:12px">${pv(n,{ask:col})}${legend}</div>`; api.choices(box, opts.map(v=>({html:`<span class="gn">${v}</span><br><small style="font-weight:600;color:var(--ink-3)">${fmtK(v)}</small>`, value:v}))); },
+      check:v=> v===val ? true : (v===val*10||v===val/10 ? '한 자리 차이예요! 판에서 그 숫자가 몇째 칸(자리)에 있는지 일의 자리부터 세어 보세요.' : false),
+      hint:'오른쪽 끝 일의 자리부터 한 칸씩 왼쪽으로 세어 보세요.',
+      solution:`${pv(n,{hl:col})}<div style="margin-top:8px">${d}은(는) <b>${COLS[col]}의 자리</b> 숫자라서 <b>${val}</b>(${fmtK(val)})을 나타내요.</div>`,
+      after(box){ const el=document.querySelector('.q-box .pv'); if(el){ const w=document.createElement('div'); w.innerHTML=pv(n,{hl:col}); el.replaceWith(w.firstElementChild); } },
+      praise:`${d}은(는) ${COLS[col]}의 자리 숫자예요.` };
+  }
+  if(type==='read'){
+    const n = randBig(9,13), right = read(n);
+    const s = String(n);
+    // 오답 만들기: 묶음 하나를 다른 단위로, 숫자 하나 바꾸기
+    const w1 = read(Number(s.slice(0,-4)) ) ; // 한 묶음 덜 읽음
+    let w2; { const arr=[...s]; const k=rand(1,arr.length-1); arr[k] = String((+arr[k]+rand(1,8))%10); w2 = read(Number(arr.join(''))); }
+    const w3 = read(Number(s+'0'));
+    const opts = shuffle([...new Set([right, w1, w2, w3])]).slice(0,3); if(!opts.includes(right)) opts[0]=right;
+    return { kicker:'수 읽기', title:'이 수를 바르게 읽은 것을 고르세요.',
+      render(box, api){ box.innerHTML = `<div class="big-num" style="margin-bottom:10px">${gn(n)}</div>`; api.choices(box, shuffle(opts).map(o=>({label:o, value:o})), {cols:1}); },
+      check:v=> v===right ? true : '일의 자리부터 네 자리씩 끊고, 왼쪽부터 조·억·만을 붙여 읽어요.',
+      solution:`${pv(n)}<div style="margin-top:8px">네 자리씩 끊으면 ${gn(n)} → <b>${right}</b></div>` };
+  }
+  if(type==='write'){
+    const n = randBig(9,12), r = read(n);
+    return { kicker:'수로 쓰기', title:'읽은 대로 수를 숫자로 써 보세요.',
+      render(box, api){ box.innerHTML = `<div class="read-card" style="margin-bottom:12px">${r}</div>`; api.input(box, {placeholder:'숫자로 쓰기', raw:true}); },
+      check:v=>{ const x = parseK(v); if(x===n) return true; if(String(x).length!==String(n).length) return `자리 수가 달라요. 비어 있는 자리에는 0을 써야 해요. 이 수는 ${String(n).length}자리예요.`; return false; },
+      hint:'조·억·만 단위마다 네 자리씩 채우고, 읽지 않은 자리에는 0을 써요.',
+      solution:`${pv(n)}<div style="margin-top:8px"><b>${r}</b> = ${gn(n)}</div>` };
+  }
+  // concept
+  const C = pick([
+    {q:'1000만이 10개인 수는?', a:'1억', o:['1억','1000만','10억','1조']},
+    {q:'억이 10000개인 수는?', a:'1조', o:['1조','10억','1000억','100조']},
+    {q:'100만이 100개인 수는?', a:'1억', o:['1억','1000만','10억','100억']},
+    {q:'1조는 1000억이 몇 개인 수일까요?', a:'10개', o:['10개','100개','1000개','10000개']},
+    {q:'10000은 9990보다 얼마만큼 더 큰 수일까요?', a:'10', o:['10','1','100','1000']},
+    {q:'9999만보다 1만큼 더 큰 수는?', a:'9999만 1', o:['9999만 1','1억','1억 1','10000만']}
+  ]);
+  if(C.a==='9999만 1'){ C.a='1억'; C.q='9999만 9999보다 1만큼 더 큰 수는?'; C.o=['1억','9999만 10000','10억','1조']; }
+  return { kicker:'큰 수 개념', title:C.q,
+    render(box, api){ api.choices(box, shuffle(C.o)); },
+    check:v=> v===C.a ? true : '0이 몇 개 늘어나는지 세어 보세요. 10배가 될 때마다 자리가 한 칸씩 올라가요.',
+    solution:`정답은 <b>${C.a}</b>예요. 1만 = 10000, 1억 = 100000000(0이 8개), 1조 = 1000000000000(0이 12개).` };
+}
+
+/* ---------- 미션 2: 뛰어 세기 워프 ---------- */
+const STEPS = [1e4,1e5,1e6,1e7,1e8,1e9,1e12,1e13];
+const placeName = st => ({1e4:'만',1e5:'십만',1e6:'백만',1e7:'천만',1e8:'억',1e9:'십억',1e12:'조',1e13:'십조'})[st];
+function trackHTML(vals, blank, shipAt){
+  return `<div class="track"><img class="ship" src="${A}galaxy/rocket2.webp" alt="" style="left:calc(${shipAt*20+10}% - 31px)">${vals.map((v,k)=>`<div class="stop ${k===blank?'blank':''}"><span class="pl"></span><span class="v">${k===blank?'?':fmtK(v)}</span></div>`).join('')}</div>`;
+}
+function m2(i){
+  const type = ['blank','step','blank','jump','place'][i];
+  const st = pick(STEPS), base = rand(2,60)*st + (st<1e8? rand(0,9)*st*10 : 0);
+  const vals = [0,1,2,3,4].map(k=>base+k*st);
+  if(type==='blank'){
+    const blank = rand(2,4), ans = vals[blank];
+    return { kicker:'빈칸 워프', title:`<em>${fmtK(st)}</em>씩 뛰어 세었어요. 빈 행성의 수는?`,
+      render(box, api){ box.innerHTML = trackHTML(vals, blank, blank-1); api.input(box, {placeholder:'예: 55만 또는 550000', raw:true, mode:'text'}); },
+      check:v=>{ const x=parseK(v); if(x===ans) return true; if(Math.abs(x-ans)===st) return '한 칸 차이예요! 앞 행성에서 한 번만 더 뛰어 보세요.'; return false; },
+      hint:`앞의 수에 ${fmtK(st)}을(를) 더하면 다음 수가 돼요.`,
+      after(box){ const t=document.querySelector('.track'); const s=t.querySelector('.ship'); t.querySelectorAll('.stop')[blank].classList.remove('blank'); t.querySelectorAll('.v')[blank].textContent = fmtK(ans); s.style.left=`calc(${blank*20+10}% - 31px)`; Game.Sound.whoosh(); },
+      solution:`${fmtK(vals[blank-1])} + ${fmtK(st)} = <b>${fmtK(ans)}</b> (${ans})` };
+  }
+  if(type==='step'){
+    const opts = shuffle([st, st*10, st/10, st*100].filter(x=>x>=1e3)).slice(0,4);
+    return { kicker:'규칙 찾기', title:'우주선은 얼마씩 뛰어 세었을까요?',
+      render(box, api){ box.innerHTML = trackHTML(vals, -1, 0); api.choices(box, opts.map(o=>({label:fmtK(o)+'씩', value:o}))); },
+      check:v=> v===st ? true : '이웃한 두 행성의 수가 어느 자리에서 달라지는지 보세요.',
+      solution:`${fmtK(vals[0])} → ${fmtK(vals[1])}: <b>${placeName(st)}의 자리</b> 숫자가 1씩 커지므로 <b>${fmtK(st)}씩</b> 뛰어 세었어요.` };
+  }
+  if(type==='jump'){
+    const startJo = rand(11,80), by = rand(2,6), times = rand(2,4), ans = (startJo + by*times)*1e12;
+    return { kicker:'우주 점프', title:`<em>${startJo}조</em>에서 <em>${by}조</em>씩 <em>${times}번</em> 뛰어 세면?`,
+      render(box, api){ box.innerHTML = `<div class="story"><img src="${A}galaxy/rocket.webp" alt=""><p>${startJo}조 행성에서 출발! ${by}조 광년씩 ${times}번 점프하면 어느 행성에 도착할까요?</p></div>`; api.input(box, {placeholder:'예: 47조', raw:true, mode:'text'}); },
+      check:v=>{ const x=parseK(v); if(x===ans) return true; if(x===(startJo+by*(times-1))*1e12) return '한 번 덜 뛰었어요. 몇 번 뛰는지 다시 세어 보세요.'; return false; },
+      hint:`${startJo}조에 ${by}조를 ${times}번 더해요.`,
+      solution:`${startJo}조 ${Array(times).fill(' + '+by+'조').join('')} = <b>${startJo+by*times}조</b>` };
+  }
+  const st2 = pick([1e4,1e5,1e8,1e12]);
+  const opts = shuffle(['만','십만','억','조','천']).filter((x,k,arr)=>true);
+  const right = placeName(st2);
+  const o4 = shuffle([right, ...shuffle(['만','십만','억','조','천','일','십억'].filter(x=>x!==right)).slice(0,3)]);
+  return { kicker:'자리의 비밀', title:`<em>${fmtK(st2)}</em>씩 뛰어 세면 어느 자리 숫자가 1씩 커질까요?`,
+    render(box, api){ api.choices(box, o4.map(o=>({label:o+'의 자리', value:o}))); },
+    check:v=> v===right ? true : `${fmtK(st2)}을(를) 숫자로 쓰면 ${st2}예요. 1이 있는 자리를 찾아보세요.`,
+    solution:`${fmtK(st2)} = ${gn(st2)} → 1이 <b>${right}의 자리</b>에 있으니 그 자리 숫자가 1씩 커져요.` };
+}
+
+/* ---------- 미션 3: 우주 예산 비교 ---------- */
+const PROBES = [
+  {id:'naro', name:'나로호', what:'우리나라 첫 우주 발사체', cost:502500000000, show:'약 5025억 원', img:'galaxy/rocket2.webp'},
+  {id:'nuri', name:'누리호', what:'독자 기술 우주 발사체', cost:1957200000000, show:'약 1조 9572억 원', img:'galaxy/rocket.webp'},
+  {id:'danuri', name:'다누리호', what:'우리나라 첫 달 탐사선', cost:236700000000, show:'약 236700000000원', img:'galaxy/orbiter.webp'}
+];
+function m3(i){
+  if(i===0){
+    const order = PROBES.slice().sort((a,b)=>b.cost-a.cost).map(p=>p.id);
+    return { kicker:'교과서 26쪽', title:'개발 비용이 <em>많은 것부터</em> 차례로 눌러 보세요.',
+      say:'세 탐사선의 개발 비용이에요. 단위가 섞여 있으니 조심! 많은 것부터 1, 2, 3 순서로 눌러요.',
+      render(box, api){
+        let picked = [];
+        box.innerHTML = `<div class="probes">${PROBES.map(p=>`<button class="probe" type="button" data-id="${p.id}"><img src="${A}${p.img}" alt=""><div><b>${p.name}</b><br><span>${p.what}</span><div class="cost">${p.show}</div></div></button>`).join('')}</div><p class="src">자료 출처: 한국항공우주연구원, 2023 (교과서 26쪽)</p><div class="next-row"><button class="jbtn white sm" type="button" id="resetPick">다시 고르기</button></div>`;
+        const btns = box.querySelectorAll('.probe');
+        btns.forEach(b=>b.onclick=()=>{ if(api.locked || picked.includes(b.dataset.id)) return; picked.push(b.dataset.id); b.classList.add('picked'); b.insertAdjacentHTML('beforeend', `<span class="ord">${picked.length}</span>`); Game.Sound.pop(); if(picked.length===3){ const v=picked.join(','); setTimeout(()=>{ api.submit(v); if(!api.locked){ picked=[]; btns.forEach(x=>{ x.classList.remove('picked'); const o=x.querySelector('.ord'); o&&o.remove(); }); } }, 250); } });
+        box.querySelector('#resetPick').onclick=()=>{ picked=[]; btns.forEach(x=>{ x.classList.remove('picked'); const o=x.querySelector('.ord'); o&&o.remove(); }); };
+      },
+      check:v=> v===order.join(',') ? true : '먼저 모두 숫자로 바꿔 보세요. 1조 9572억은 1조가 넘고, 236700000000은 네 자리씩 끊으면 2367억이에요.',
+      solution:`누리호 <b>1조 9572억</b> &gt; 나로호 <b>5025억</b> &gt; 다누리호 <b>2367억</b>(236700000000)<br>1조가 넘는 누리호가 가장 많고, 5025억과 2367억은 천억의 자리(5 &gt; 2)를 비교해요.`,
+      praise:'누리호 > 나로호 > 다누리호! 1조가 넘는 누리호가 가장 많아요.' };
+  }
+  // 두 수 비교
+  const sameLen = i%2===1; let a,b;
+  if(sameLen){ const len = rand(9,13); a = randBig(len,len); const s=[...String(a)]; const k=rand(1,len-2); s[k]=String((+s[k]+rand(1,8))%10); b=Number(s.join('')); if(a===b) b=a+Math.pow(10, rand(2,5)); }
+  else { a = randBig(9,12); b = Number(String(randBig(String(a).length-1,String(a).length-1)).replace(/^./, d=>String(Math.min(9,+d+5)))); }
+  if(Math.random()<.5) [a,b]=[b,a];
+  const right = a>b?'>':a<b?'<':'=';
+  const sa=String(a).padStart(13,' '), sb=String(b).padStart(13,' '); let diff=-1; for(let k=0;k<13;k++){ if(sa[k]!==sb[k]){ diff=k; break; } }
+  return { kicker:'수의 크기 비교', title:'두 수의 크기를 비교해 □ 안에 알맞은 기호를 고르세요.',
+    render(box, api){ box.innerHTML = `<div class="cmp-row">${gn(a)}<span class="box">?</span>${gn(b)}</div>`; api.choices(box, ['>','=','<'].map(s=>({label:s, value:s})), {cols:3}); },
+    check:v=> v===right ? true : (String(a).length!==String(b).length ? '먼저 자리 수를 세어 보세요. 자리 수가 많은 쪽이 더 커요.' : '자리 수가 같으면 가장 높은 자리부터 차례로 비교해요. 처음으로 다른 숫자를 찾아보세요.'),
+    after(box){ box.innerHTML = `<div style="display:grid;gap:6px">${pv(a,{diff})}${pv(b,{diff})}</div><p style="margin:6px 0 0;font-size:15px;color:var(--ink-2)">${String(a).length!==String(b).length?'자리 수가 다르면 자리 수가 많은 쪽이 커요.':`<b>${COLS[diff]}의 자리</b>에서 처음으로 숫자가 달라요.`}</p>`; document.querySelector('.cmp-row .box').textContent = right; },
+    solution:`<div style="display:grid;gap:6px">${pv(a,{diff})}${pv(b,{diff})}</div>${String(a).length!==String(b).length?'자리 수가 많은 쪽이 더 큰 수예요.':`분홍 칸(<b>${COLS[diff]}의 자리</b>)에서 처음 달라져요.`} 그래서 ${gn(a)} <b>${right}</b> ${gn(b)}` };
+}
+
+/* ---------- 미션 4: 연료 곱셈 ---------- */
+const MUL_STORIES = [
+  {img:'galaxy/fuel.webp', t:(a,b)=>`연료 통 하나에 <b>${a}</b> L씩 들어 있어요. 연료 통 <b>${b}</b>개를 실으면 연료는 모두 몇 L일까요?`, u:'L'},
+  {img:'galaxy/crate.webp', t:(a,b)=>`보급 상자 하나에 우주 식량이 <b>${a}</b>개씩 들어 있어요. 상자 <b>${b}</b>개에는 모두 몇 개일까요?`, u:'개'},
+  {img:'galaxy/station.webp', t:(a,b)=>`우주 정거장 태양 전지판 한 줄에 <b>${a}</b>장씩, <b>${b}</b>줄을 달면 모두 몇 장일까요?`, u:'장'}
+];
+function roundNice(x){ const p = x>=100? 10 : 1; return Math.round(x/p)*p; }
+function m4(i, ctx){
+  if(i%2===0){
+    ctx.a = rand(112,899); ctx.b = rand(13,89); ctx.s = pick(MUL_STORIES);
+    const ra = Math.round(ctx.a/10)*10, rb = Math.round(ctx.b/10)*10, est = ra*rb;
+    ctx.est = est; ctx.ra=ra; ctx.rb=rb;
+    const opts = shuffle([est, est*10, est/10, Math.round(ctx.a/100)*100*Math.round(ctx.b/10)*10===est? est+ra*10 : Math.round(ctx.a/100)*100*rb]).filter((v,k,arr)=>arr.indexOf(v)===k).slice(0,4);
+    while(opts.length<4) opts.push(est + opts.length*1000);
+    return { kicker:'먼저 어림하기', title:'계산하기 전에 <em>어림</em>해 볼까요?',
+      say:'우주에서는 먼저 대략 얼마쯤인지 어림해 두면 실수를 잡을 수 있어요!',
+      render(box, api){ box.innerHTML = `<div class="story" style="margin-bottom:14px"><img src="${A}${ctx.s.img}" alt=""><p>${ctx.s.t(ctx.a, ctx.b)}<br><span style="color:var(--ink-3);font-size:15px">${ctx.a} × ${ctx.b}을(를) 어림하면 약 얼마일까요?</span></p></div>`; api.choices(box, shuffle(opts).map(v=>({label:'약 '+v, value:v}))); },
+      check:v=> v===est ? true : `${ctx.a}를 몇십으로, ${ctx.b}를 몇십으로 어림해서 곱해 보세요. 예: ${ctx.a} → ${ra}`,
+      solution:`${ctx.a} → 약 <b>${ra}</b>, ${ctx.b} → 약 <b>${rb}</b>이므로 ${ra} × ${rb} = <b>약 ${est}</b>` };
+  }
+  const {a,b,s} = ctx, ans = a*b, tens = Math.floor(b/10)*10, ones = b%10;
+  return { kicker:'세 자리 × 두 자리', title:`이제 정확하게! <em>${a} × ${b}</em> = ?`,
+    render(box, api){ box.innerHTML = `<div class="story" style="margin-bottom:10px"><img src="${A}${s.img}" alt=""><p>어림값은 <b>약 ${ctx.est}</b>였어요. 정확한 값은?</p></div>`; api.input(box, {placeholder:'곱', unit:s.u}); },
+    check:v=>{ if(v===ans) return true; if(v===a*ones + a*Math.floor(b/10)) return `${a} × ${tens}을(를) 계산할 때 0을 하나 붙이는 것을 잊었나 봐요!`; if(Math.abs(v-ctx.est) > ctx.est*0.35) return `어림값 약 ${ctx.est}과(와) 너무 차이가 나요. 다시 계산해 보세요.`; return `거의 다 왔어요! ${a} × ${ones}와(과) ${a} × ${tens}을(를) 따로 구해서 더해 보세요.`; },
+    after(box){ box.innerHTML = areaModel(a,tens,ones); },
+    solution:`${areaModel(a,tens,ones)}<div class="check-eq">${a} × ${b} = <b>${ans}</b></div>`,
+    praise:`어림값 약 ${ctx.est}와(과) 비슷하니 확신할 수 있죠!` };
+}
+function areaModel(a,tens,ones){
+  const t=a*tens, o=a*ones, tot=t+o;
+  return `<div class="area"><div class="bar"><div style="flex:${t};background:var(--accent)">${a}×${tens} = ${t}</div>${o?`<div style="flex:${Math.max(o,tot*0.18)};background:#0aa3c9">${a}×${ones} = ${o}</div>`:''}</div><div style="font-weight:800;color:var(--ink-2)">${t} + ${o} = <span class="num" style="color:var(--accent-dark);font-size:1.2em">${tot}</span></div></div>`;
+}
+
+/* ---------- 미션 5: 보급품 나눗셈 ---------- */
+function m5(i, ctx){
+  if(i===1){
+    const b = rand(21,79), q = rand(6,19), n = b*q + rand(1,b-1); const est = Math.round(n/Math.round(b/10)/10);
+    const real = Math.floor(n/b); const opts = shuffle([real, real*10, Math.max(1,Math.round(real/10)), real+ (real>5?5:3)]).filter((v,k,arr)=>arr.indexOf(v)===k);
+    return { kicker:'몫 어림하기', title:`<em>${n} ÷ ${b}</em>의 몫은 어느 것에 가장 가까울까요?`,
+      say:'나누기 전에 몫이 대략 얼마쯤인지 어림해요. 나누는 수를 몇십으로 생각해 봐요!',
+      render(box, api){ api.choices(box, opts.map(v=>({label:'약 '+v, value:v}))); },
+      check:v=> v===real ? true : `${b}을(를) 약 ${Math.round(b/10)*10}으로 생각하고, ${Math.round(b/10)*10}에 몇을 곱하면 ${n}에 가까워지는지 생각해 보세요.`,
+      solution:`${b} × ${real} = ${b*real}, ${b} × ${real+1} = ${b*(real+1)} 이므로 몫은 <b>${real}</b>쯤이에요.` };
+  }
+  const n = i===0 ? 550 : rand(240,980), b = i===0 ? 36 : rand(13,68), q = Math.floor(n/b), r = n%b;
+  const story = i===0 ? `색종이 <b>${n}</b>장을 한 묶음에 <b>${b}</b>장씩 묶으려고 해요. 몇 묶음까지 묶을 수 있고, 몇 장이 남을까요? <span style="color:var(--ink-3);font-size:14px">(익힘책 53쪽)</span>` : pick([`우주 식량 <b>${n}</b>개를 보급 상자 하나에 <b>${b}</b>개씩 담아요. 상자는 몇 개가 되고, 몇 개가 남을까요?`,`연료 캡슐 <b>${n}</b>개를 탐사선 한 대에 <b>${b}</b>개씩 나눠 실어요. 몇 대에 실을 수 있고, 몇 개가 남을까요?`]);
+  return { kicker:'몫과 나머지', title:`<em>${n} ÷ ${b}</em>`,
+    render(box, api){
+      box.innerHTML = `<div class="story" style="margin-bottom:12px"><img src="${A}galaxy/crate.webp" alt=""><p>${story}</p></div><div class="qr-row"><label for="qq">몫</label><input class="ans sm" id="qq" inputmode="numeric" autocomplete="off"><label for="rr">나머지</label><input class="ans sm" id="rr" inputmode="numeric" autocomplete="off"><button class="jbtn sm" type="button" id="qrGo">확인</button></div>`;
+      const go=()=>{ const qv=api.num(box.querySelector('#qq').value), rv=api.num(box.querySelector('#rr').value); if(isNaN(qv)||isNaN(rv)){ Game.toast('몫과 나머지를 모두 써 주세요'); return; } api.submit([qv,rv]); };
+      box.querySelector('#qrGo').onclick = go; box.querySelectorAll('input').forEach(x=>x.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.isComposing) go(); }));
+      if(!('ontouchstart' in window)) setTimeout(()=>box.querySelector('#qq').focus(),60);
+    },
+    check:([qv,rv])=>{ if(qv===q && rv===r) return true; if(rv>=b) return `나머지 ${rv}는 나누는 수 ${b}보다 크거나 같아요. 나머지는 나누는 수보다 작아야 해요!`; if(b*qv+rv===n) return '계산은 맞는데 나머지가 너무 커요. 한 묶음 더 만들 수 있어요!'; if(b*qv>n) return `${b} × ${qv} = ${b*qv}는 ${n}보다 커요. 몫을 줄여 보세요.`; return `${b} × ${qv} = ${b*qv}. ${n}에서 빼면 얼마가 남는지 확인해 보세요.`; },
+    after(box){ box.innerHTML = `<div class="check-eq">${b} × ${q} + ${r} = ${n}</div><div class="crates">${Array.from({length:Math.min(q,30)},(_,k)=>`<img src="${A}galaxy/crate.webp" alt="" style="animation-delay:${k*0.04}s">`).join('')}${q>30?`<b>…${q}개</b>`:''}<span class="left">남은 것 ${r}</span></div>`; },
+    solution:`${b} × ${q} = ${b*q}, ${n} − ${b*q} = ${r}<br>몫 <b>${q}</b>, 나머지 <b>${r}</b> &nbsp; 확인: ${b} × ${q} + ${r} = ${n}`,
+    praise:'확인 식까지 딱 맞아요!' };
+}
+
+/* ---------- 미션 6: 최강 나눗셈 (도전) ---------- */
+function perms(arr){ if(arr.length<=1) return [arr]; const out=[]; arr.forEach((x,i)=>perms(arr.slice(0,i).concat(arr.slice(i+1))).forEach(p=>out.push([x,...p]))); return out; }
+function m6(i){
+  const cards = [6,5,2,8,4], goal = i===0 ? 'max' : 'min';
+  const all = perms(cards).map(p=>{ const n=+p.slice(0,3).join(''), d=+p.slice(3).join(''); return {n,d,q:Math.floor(n/d),r:n%d}; });
+  const best = goal==='max' ? Math.max(...all.map(x=>x.q)) : Math.min(...all.map(x=>x.q));
+  const winners = all.filter(x=>x.q===best);
+  return { kicker:'★ 도전 · 익힘책 53쪽', title: goal==='max' ? '수 카드를 한 번씩 모두 써서 <em>몫이 가장 큰</em> (세 자리 수) ÷ (두 자리 수)를 만드세요.' : '이번엔 반대로! <em>몫이 가장 작은</em> 나눗셈을 만드세요.',
+    say: goal==='max' ? '나누어지는 수는 크게, 나누는 수는 작게 하면 몫이 커지겠죠? 카드를 눌러 빈칸을 채워 봐요.' : '몫을 가장 작게 하려면 어떻게 해야 할까요? 거꾸로 생각해 봐요!',
+    render(box, api){
+      const slots = Array(5).fill(null);
+      box.innerHTML = `<div class="cards">${cards.map((c,k)=>`<button class="ncard" type="button" data-k="${k}">${c}</button>`).join('')}</div>
+        <div class="slots">${[0,1,2].map(k=>`<button class="slot" type="button" data-s="${k}" aria-label="빈칸"></button>`).join('')}<span class="op">÷</span>${[3,4].map(k=>`<button class="slot" type="button" data-s="${k}" aria-label="빈칸"></button>`).join('')}</div>
+        <div class="live" id="live">카드를 눌러 빈칸을 채워요. 빈칸을 누르면 카드가 돌아가요.</div>
+        <div class="next-row"><button class="jbtn" type="button" id="divGo" disabled>이 나눗셈으로 확인</button></div>`;
+      const cardB = box.querySelectorAll('.ncard'), slotB = box.querySelectorAll('.slot'), live = box.querySelector('#live'), go = box.querySelector('#divGo');
+      const paint=()=>{ slotB.forEach((s,k)=>{ s.textContent = slots[k]==null?'':cards[slots[k]]; s.classList.toggle('full', slots[k]!=null); }); cardB.forEach((c,k)=>c.classList.toggle('used', slots.includes(k)));
+        const full = slots.every(x=>x!=null); go.disabled = !full;
+        if(full){ const n=+slots.slice(0,3).map(k=>cards[k]).join(''), d=+slots.slice(3).map(k=>cards[k]).join(''); live.innerHTML = `${n} ÷ ${d} = 몫 <b>${Math.floor(n/d)}</b> … 나머지 <b>${n%d}</b>`; } else live.textContent = '카드를 눌러 빈칸을 채워요. 빈칸을 누르면 카드가 돌아가요.'; };
+      cardB.forEach(c=>c.onclick=()=>{ if(api.locked) return; const e=slots.indexOf(null); if(e<0) return; slots[e]=+c.dataset.k; Game.Sound.pop(); paint(); });
+      slotB.forEach(s=>s.onclick=()=>{ if(api.locked) return; slots[+s.dataset.s]=null; Game.Sound.tick(); paint(); });
+      go.onclick=()=>{ const n=+slots.slice(0,3).map(k=>cards[k]).join(''), d=+slots.slice(3).map(k=>cards[k]).join(''); api.submit({n,d}); };
+    },
+    check:({n,d})=>{ const q=Math.floor(n/d); if(q===best) return true; return goal==='max' ? `몫이 ${q}예요. 나누어지는 수를 더 크게, 나누는 수를 더 작게 만들 수 있을까요?` : `몫이 ${q}예요. 나누어지는 수를 더 작게, 나누는 수를 더 크게 해 보세요.`; },
+    after(box){ box.innerHTML = aiScan(all, best, winners); },
+    solution:`${aiScan(all,best,winners)}`,
+    praise: goal==='max' ? `${winners[0].n} ÷ ${winners[0].d} = ${best} … ${winners[0].r}` : `${winners[0].n} ÷ ${winners[0].d} = ${best} … ${winners[0].r}` };
+}
+function aiScan(all, best, winners){
+  const show = all.slice().sort((a,b)=>b.q-a.q);
+  return `<div class="solution" style="margin-top:0"><b>갤럭시GPT는 카드 순서 120가지를 모두 계산해 봤어요.</b> 사람은 규칙(크게 ÷ 작게)으로 빨리 찾고, 컴퓨터는 모든 경우를 확인해서 정답을 확신해요.<br>가장 ${best===show[0].q?'큰':'작은'} 몫: <b>${winners.map(w=>`${w.n} ÷ ${w.d}`).join(', ')}</b> → 몫 <b>${best}</b>
+    <div class="ai-scan">${show.map(x=>`<span class="${x.q===best?'best':''}">${x.n}÷${x.d}=${x.q}</span>`).join('')}</div></div>`;
+}
+
+Game.init({
+  key:'galaxy', name:'넘버 갤럭시', gpt:'갤럭시GPT', bg:A+'bg_galaxy.webp', hero:A+'suri_space.webp', badge:A+'badge_galaxy.webp', badgeTitle:'갤럭시 항해사',
+  kicker:'4학년 1학기 · 큰 수 · 곱셈과 나눗셈',
+  sub:'우주 탐사 로봇 수리와 함께 억·조 단위의 큰 수를 해독하고, 연료와 보급품을 계산해 은하를 건너요!',
+  units:['1단원 큰 수','3단원 곱셈과 나눗셈','★ 도전 미션'],
+  faces:{happy:A+'suri_happy.webp', wow:A+'suri_wow.webp', think:A+'suri_think.webp', cheer:A+'suri_cheer.webp'},
+  missions:[
+    {id:'place', name:'자릿값 해독기', short:'만·억·조 자릿값', icon:A+'galaxy/station.webp', pos:[12,70], count:6, gen:m1,
+     intro:'우주 정거장 신호를 해독해야 해요! 큰 수는 <b>일의 자리부터 네 자리씩</b> 끊으면 쉽게 읽을 수 있어요.', recap:'큰 수는 일의 자리부터 네 자리씩 끊어 <b>만·억·조</b>를 붙여 읽어요. 1억은 1000만이 10개, 1조는 1000억이 10개!'},
+    {id:'warp', name:'뛰어 세기 워프', short:'만·억·조씩 뛰어 세기', icon:A+'galaxy/rocket2.webp', pos:[29,38], count:5, gen:m2,
+     intro:'워프 엔진 가동! 일정하게 뛰어 세면 <b>한 자리 숫자만</b> 1씩 커져요. 어느 자리인지 찾아봐요.', recap:'만씩 뛰어 세면 만의 자리, 억씩 뛰어 세면 억의 자리 숫자가 1씩 커져요.'},
+    {id:'budget', name:'우주 예산 비교', short:'큰 수의 크기 비교', icon:A+'galaxy/orbiter.webp', pos:[46,68], count:5, gen:m3,
+     intro:'나로호, 누리호, 다누리호의 개발 비용을 비교해 봐요. 단위가 섞여 있으면 숫자로 바꿔 생각해요.', recap:'자리 수가 다르면 자리 수가 많은 쪽이, 같으면 높은 자리부터 비교해 처음 다른 숫자가 큰 쪽이 더 커요.'},
+    {id:'fuel', name:'연료 곱셈', short:'세 자리 × 두 자리', icon:A+'galaxy/fuel.webp', pos:[63,36], count:4, gen:m4,
+     intro:'연료를 싣기 전에 먼저 어림하고, 정확히 계산해요. 어림값과 비교하면 실수를 잡을 수 있어요!', recap:'(세 자리 수) × (두 자리 수)는 몇십을 곱한 값과 몇을 곱한 값을 더해요. 어림값으로 답을 검사해요.'},
+    {id:'supply', name:'보급품 나눗셈', short:'몫과 나머지', icon:A+'galaxy/crate.webp', pos:[79,64], count:5, gen:m5,
+     intro:'보급품을 똑같이 나눠 실어요. <b>나머지는 나누는 수보다 작아야</b> 한다는 것, 잊지 마세요!', recap:'나눗셈은 (나누는 수) × (몫) + (나머지) = (나누어지는 수)로 확인해요. 나머지는 나누는 수보다 작아요.'},
+    {id:'boss', name:'★ 최강 나눗셈', short:'수 카드 도전', icon:A+'galaxy/planet_ring.webp', pos:[89,26], count:2, gen:m6, boss:true,
+     intro:'마지막 도전! 수 카드 6, 5, 2, 8, 4로 몫이 가장 큰 나눗셈과 가장 작은 나눗셈을 만들어요.', recap:'몫을 크게 하려면 나누어지는 수는 크게, 나누는 수는 작게! 컴퓨터는 모든 경우(120가지)를 계산해서 확인해요.'}
+  ],
+  blueprint:[
+    ['이름','넘버 갤럭시 (도우미: 갤럭시GPT)'],
+    ['누구를 위해','큰 수와 곱셈·나눗셈을 연습하고 싶은 4학년'],
+    ['목표','[4수01-01·02] 큰 수의 자릿값과 크기 비교 · [4수01-04·06·07·08] 곱셈, 나눗셈, 어림'],
+    ['입력','보기 누르기, 수 쓰기(“55만”처럼 써도 알아들어요), 탐사선 순서 누르기, 수 카드 놓기'],
+    ['규칙','<div class="rule"><b>만약</b> 답 = 정답 → 칭찬 + 별 + 다음 문제</div><div class="rule"><b>만약</b> 한 자리 차이로 틀림 → “일의 자리부터 세어 보세요”</div><div class="rule"><b>만약</b> 나머지 ≥ 나누는 수 → “나머지는 더 작아야 해요”</div><div class="rule"><b>만약</b> 두 번 틀림 → 풀이 단계 보여 주기</div><div class="rule"><b>만약</b> 미션 끝 → 실수 0개 ★★★, 1~2개 ★★</div>'],
+    ['출력','수리의 말풍선과 표정, 자릿값 판 불빛, 우주선 워프, 보급 상자, 컴퓨터가 120가지를 모두 계산한 표'],
+    ['디자인','ChatGPT로 그린 우주 그림과 캐릭터, 네 자리 묶음 색띠(조·억·만·일), 보라색 우주 분위기']
+  ]
+});
+})();
+</script>
+</body>
+</html>

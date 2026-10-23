@@ -1,0 +1,1085 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>수학 AI 스튜디오</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Fredoka:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;600;700;900&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="_design/base.css">
+<style>
+/* 수업 허브: 왼쪽 = 수업 순서(채팅 목록처럼), 오른쪽 = 단계별 화면. 세 앱의 색(보라·초록·코랄)이 오브 하나에 모임 */
+:root{
+  --accent:#4f5bd5; --accent-2:#8b93ff; --accent-ink:#3b46b8; --accent-soft:#eceefd;
+  --c-galaxy:#7c5cff; --c-galaxy-soft:#efeaff;
+  --c-bot:#10a37f; --c-bot-soft:#e5f6f0;
+  --c-pattern:#f2542d; --c-pattern-soft:#fdece6;
+  --c-blue:#2f80ed; --c-blue-soft:#e6f0fd;
+  --c-pink:#e0458f; --c-pink-soft:#fce8f1;
+  --c-yellow:#d99a00; --c-yellow-soft:#fdf3d8;
+  --canva:#7d2ae8;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --accent:#8b93ff; --accent-2:#b4b9ff; --accent-ink:#c3c7ff; --accent-soft:rgba(139,147,255,.16);
+  --c-galaxy:#a08bff; --c-galaxy-soft:rgba(160,139,255,.16);
+  --c-bot:#2fd39b; --c-bot-soft:rgba(47,211,155,.14);
+  --c-pattern:#ff8160; --c-pattern-soft:rgba(255,129,96,.15);
+  --c-blue:#6aa8ff; --c-blue-soft:rgba(106,168,255,.15);
+  --c-pink:#ff7ab3; --c-pink-soft:rgba(255,122,179,.15);
+  --c-yellow:#ffc94a; --c-yellow-soft:rgba(255,201,74,.14);
+  --canva:#b17bff;
+}}
+:root[data-theme="dark"]{
+  --accent:#8b93ff; --accent-2:#b4b9ff; --accent-ink:#c3c7ff; --accent-soft:rgba(139,147,255,.16);
+  --c-galaxy:#a08bff; --c-galaxy-soft:rgba(160,139,255,.16);
+  --c-bot:#2fd39b; --c-bot-soft:rgba(47,211,155,.14);
+  --c-pattern:#ff8160; --c-pattern-soft:rgba(255,129,96,.15);
+  --c-blue:#6aa8ff; --c-blue-soft:rgba(106,168,255,.15);
+  --c-pink:#ff7ab3; --c-pink-soft:rgba(255,122,179,.15);
+  --c-yellow:#ffc94a; --c-yellow-soft:rgba(255,201,74,.14);
+  --canva:#b17bff;
+}
+
+/* 세 앱 색이 한 오브에 */
+.orb{background:radial-gradient(circle at 30% 28%,rgba(255,255,255,.95) 0 11%,transparent 12%),conic-gradient(from 200deg,var(--c-galaxy),var(--c-bot),var(--c-pattern),var(--c-galaxy))}
+.orb.spin{animation:orbspin 14s linear infinite}
+@keyframes orbspin{to{filter:hue-rotate(360deg)}}
+
+.page{flex:1;overflow-y:auto;overscroll-behavior:contain}
+.view{max-width:1000px;margin:0 auto;padding-block:8px 96px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:22px}
+.view-head{display:flex;flex-direction:column;gap:8px;padding-top:18px}
+.eyebrow{font-size:13px;font-weight:700;color:var(--fg-3);letter-spacing:.06em}
+.view-head h2{font-size:clamp(24px,3.4vw,32px);font-weight:700;letter-spacing:-.02em}
+.view-head p{color:var(--fg-2);max-width:62ch}
+.section-title{font-size:18px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.muted{color:var(--fg-2)}
+.small{font-size:14px}
+.next-row{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;padding-top:6px}
+
+/* 홈 */
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;padding:clamp(28px,7vh,72px) 0 6px}
+.hero .orb.lg{width:72px;height:72px;box-shadow:0 10px 40px -8px var(--c-galaxy)}
+.hero .tag{font-size:13px}
+.hero h1{font-size:clamp(30px,5.4vw,52px);font-weight:800;letter-spacing:-.035em;line-height:1.15}
+.grad{background:linear-gradient(100deg,var(--c-galaxy) 5%,var(--c-bot) 50%,var(--c-pattern) 95%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .sub{font-size:clamp(16px,2vw,19px);color:var(--fg-2);font-weight:500}
+.home-composer{width:100%;max-width:720px;display:flex;flex-direction:column;gap:10px}
+.home-composer .composer{max-width:none;width:100%}
+.home-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.mini-thread{width:100%;max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:22px;text-align:left}
+.mini-thread:empty{display:none}
+.flow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.flow button{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:12px 10px;text-align:left;display:flex;flex-direction:column;gap:4px;min-height:96px;transition:background .15s,transform .15s}
+.flow button:hover{background:var(--hover);transform:translateY(-2px)}
+.flow .n{font-family:var(--font-num);font-weight:700;font-size:13px;color:var(--fg-3)}
+.flow b{font-size:15px}
+.flow span{font-size:12px;color:var(--fg-3);line-height:1.45}
+.flow button.done .n::after{content:" ✓";color:var(--good)}
+
+/* 1 만나기 */
+.ipo{display:grid;grid-template-columns:1fr auto 1.3fr auto 1fr;gap:10px;align-items:stretch}
+.ipo .box{border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);background:var(--surface)}
+.ipo .box b{font-size:17px}
+.ipo .box .k{font-size:12px;font-weight:700;letter-spacing:.06em}
+.ipo .in .k{color:var(--c-blue)} .ipo .rule .k{color:var(--c-galaxy)} .ipo .outp .k{color:var(--c-bot)}
+.ipo .arrow{display:grid;place-items:center;color:var(--fg-3);font-size:22px}
+.demo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px}
+.demo-q{font-family:var(--font-num);font-size:44px;font-weight:700;letter-spacing:-.02em}
+.rules{display:flex;flex-direction:column;gap:8px}
+.rules .rule-line{margin:0;transition:background .25s,border-color .25s,transform .25s;display:flex;gap:8px;align-items:flex-start}
+.rules .rule-line.fire{background:var(--accent-soft);border-color:var(--accent);transform:translateX(4px)}
+.rules .rule-line .no{font-weight:700;color:var(--fg-3)}
+.demo-out{min-height:52px;border-radius:14px;padding:12px 14px;background:var(--sunken);font-size:15px;display:flex;gap:10px;align-items:flex-start}
+.demo-out .orb{width:24px;height:24px}
+.callout{border-radius:20px;padding:18px 20px;background:var(--sunken);display:flex;gap:14px;align-items:flex-start}
+.callout .orb{width:28px;height:28px}
+
+/* 2 체험하기 */
+.apps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.app-card{border:1px solid var(--line);border-radius:24px;background:var(--surface);overflow:hidden;display:flex;flex-direction:column}
+.app-art{height:150px;position:relative;overflow:hidden}
+.app-art svg{position:absolute;inset:0;width:100%;height:100%}
+.app-body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.app-body h3{font-size:20px;font-weight:800;letter-spacing:-.02em}
+.gpt-pill{align-self:flex-start;font-size:12px;font-weight:700;border-radius:99px;padding:3px 10px}
+.units{display:flex;gap:6px;flex-wrap:wrap}
+.check{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:14px;background:var(--sunken)}
+.check label{display:flex;gap:8px;align-items:flex-start;font-size:14px;line-height:1.5;cursor:pointer}
+.check input{width:18px;height:18px;margin-top:2px;accent-color:var(--accent);flex:none}
+.app-card .btn{margin-top:auto}
+.galaxy{--a:var(--c-galaxy);--as:var(--c-galaxy-soft)} .bot{--a:var(--c-bot);--as:var(--c-bot-soft)} .pattern{--a:var(--c-pattern);--as:var(--c-pattern-soft)}
+.app-card .gpt-pill{background:var(--as);color:var(--a)}
+.app-card .btn-open{background:var(--a);color:#fff}
+
+/* 3 해부하기 */
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:20px;background:var(--surface)}
+table.cmp{border-collapse:collapse;width:100%;min-width:720px;font-size:14px}
+.cmp th,.cmp td{padding:12px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line);line-height:1.55}
+.cmp tr:last-child td{border-bottom:0}
+.cmp thead th{font-size:15px;background:var(--sunken)}
+.cmp tbody th{font-size:13px;color:var(--fg-2);width:132px;white-space:nowrap}
+.cmp .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.types{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.type{border:1px solid var(--line);border-radius:18px;padding:14px 16px;background:var(--surface);display:flex;flex-direction:column;gap:4px}
+.type b{font-size:16px}
+.type span{font-size:13px;color:var(--fg-2);line-height:1.5}
+.ideas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.unit-col{border-radius:18px;padding:14px;background:var(--sunken);display:flex;flex-direction:column;gap:8px}
+.unit-col h4{margin:0;font-size:14px;display:flex;gap:8px;align-items:center}
+.unit-col h4 .num{font-size:13px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:0 7px}
+.idea{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:10px 12px;text-align:left;display:flex;flex-direction:column;gap:2px;transition:border-color .15s,transform .12s}
+.idea:hover{border-color:var(--accent);transform:translateY(-1px)}
+.idea b{font-size:14px}
+.idea span{font-size:12px;color:var(--fg-3)}
+
+/* 4 설계하기 */
+.planner{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+.form{display:flex;flex-direction:column;gap:14px}
+.form .card{display:flex;flex-direction:column;gap:12px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1px solid var(--line-strong);background:var(--surface);border-radius:99px;padding:7px 13px;font-size:14px;font-weight:500;min-height:38px}
+.seg button[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+select.input{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--fg-3) 50%),linear-gradient(135deg,var(--fg-3) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:34px}
+.rule-edit{display:grid;grid-template-columns:auto minmax(0,1fr) auto minmax(0,1.3fr);gap:8px;align-items:center}
+.rule-edit .kw{font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--accent-ink)}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.swatch{width:38px;height:38px;border-radius:50%;border:3px solid var(--bg);box-shadow:0 0 0 1px var(--line-strong)}
+.swatch[aria-pressed="true"]{box-shadow:0 0 0 2px var(--fg)}
+.preview{position:sticky;top:12px;display:flex;flex-direction:column;gap:12px}
+.prompt-box{font-family:var(--font-mono);font-size:13px;line-height:1.7;white-space:pre-wrap;background:var(--sunken);border:1px solid var(--line);border-radius:16px;padding:16px;max-height:420px;overflow:auto;overflow-wrap:anywhere}
+.bp-head{display:flex;align-items:center;gap:12px}
+.bp-head .orb{width:40px;height:40px}
+.bp-head h3{font-size:20px;font-weight:800;letter-spacing:-.02em}
+
+/* 5 만들기 */
+.invite{border-radius:24px;padding:22px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;border:1px solid var(--line);background:linear-gradient(135deg,color-mix(in srgb,var(--canva) 12%,var(--surface)),var(--surface) 60%)}
+.invite h3{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.btn-canva{background:var(--canva);color:#fff}
+.qr{width:132px;height:132px;border-radius:14px;background:#fff;padding:8px;display:grid;place-items:center}
+.qr:empty{display:none}
+.qr img,.qr canvas{width:100%!important;height:100%!important}
+.steps{display:flex;flex-direction:column;gap:10px;counter-reset:s}
+.step{display:grid;grid-template-columns:40px minmax(0,1fr);gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}
+.step .sn{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-family:var(--font-num);font-weight:700;background:var(--sunken)}
+.step b{font-size:16px}
+.step p{font-size:14px;color:var(--fg-2);margin-top:2px}
+.kbd{display:inline-block;font-size:13px;font-weight:600;border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:7px;padding:0 7px;background:var(--surface);color:var(--fg)}
+.fix-chips{display:flex;flex-wrap:wrap;gap:8px}
+
+/* 6 공유하기 (게시판) */
+.board-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.status{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;border-radius:99px;padding:5px 12px;background:var(--hover);color:var(--fg-2)}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--fg-3)}
+.status.st-live{background:var(--good-soft);color:var(--good)} .status.st-live i{background:var(--good);animation:pulse 1.6s infinite}
+.status.st-preview{background:var(--warn-soft);color:var(--warn)} .status.st-preview i{background:var(--warn)}
+.status.st-error{background:var(--bad-soft);color:var(--bad)} .status.st-error i{background:var(--bad)}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filters button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 12px;font-size:13px;font-weight:600}
+.filters button[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.post{border:1px solid var(--line);border-radius:22px;background:var(--surface);overflow:hidden;display:flex;flex-direction:column;transition:transform .18s,box-shadow .18s}
+.post:hover{transform:translateY(-3px);box-shadow:0 14px 30px -18px rgba(0,0,0,.35)}
+.post-art{height:112px;position:relative;background:var(--ps)}
+.post-art svg{position:absolute;inset:0;width:100%;height:100%}
+.post-art .initial{position:absolute;left:16px;bottom:-22px;width:52px;height:52px;border-radius:16px;background:var(--p);color:#fff;display:grid;place-items:center;font-weight:800;font-size:22px;box-shadow:0 0 0 4px var(--surface)}
+.post-art .pin{position:absolute;right:12px;top:12px;font-size:12px;font-weight:700;background:var(--surface);color:var(--fg);border-radius:99px;padding:3px 10px}
+.post-body{padding:30px 16px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.post-body h3{font-size:18px;font-weight:800;letter-spacing:-.02em;overflow-wrap:anywhere}
+.post-meta{font-size:13px;color:var(--fg-3);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.post-desc{font-size:14px;color:var(--fg-2);line-height:1.55;overflow-wrap:anywhere}
+.post-foot{display:flex;flex-direction:column;gap:10px;padding:0 14px 14px}
+.post-foot .r1,.post-foot .r2{display:flex;gap:6px;align-items:center}
+.post-foot .r2>*{flex:1}
+.post-foot .cc{font-size:13px;color:var(--fg-3);font-weight:600}
+.react{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:5px 11px;font-size:14px;font-weight:600;display:inline-flex;gap:6px;align-items:center;min-height:36px}
+.react[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
+.post-foot .grow{flex:1}
+.p-violet{--p:var(--c-galaxy);--ps:var(--c-galaxy-soft)} .p-green{--p:var(--c-bot);--ps:var(--c-bot-soft)} .p-coral{--p:var(--c-pattern);--ps:var(--c-pattern-soft)}
+.p-blue{--p:var(--c-blue);--ps:var(--c-blue-soft)} .p-pink{--p:var(--c-pink);--ps:var(--c-pink-soft)} .p-yellow{--p:var(--c-yellow);--ps:var(--c-yellow-soft)}
+.empty{border:1.5px dashed var(--line-strong);border-radius:22px;padding:34px 20px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;color:var(--fg-2)}
+.hidden-badge{font-size:11px;font-weight:700;color:var(--bad)}
+.post.is-hidden{opacity:.5}
+
+/* 작품 자세히 + 댓글 */
+.detail-head{display:flex;gap:14px;align-items:center}
+.detail-head .initial{width:52px;height:52px;border-radius:16px;background:var(--p);color:#fff;display:grid;place-items:center;font-weight:800;font-size:22px;flex:none}
+.detail-head h2{margin:0;font-size:22px}
+.kinds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kind-btn{border:1px solid var(--line-strong);background:var(--surface);border-radius:14px;padding:10px 8px;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;min-height:50px}
+.kind-btn small{font-weight:500;color:var(--fg-3);font-size:11px}
+.kind-btn[aria-pressed="true"]{border-color:var(--fg);background:var(--hover)}
+.starters{display:flex;gap:6px;flex-wrap:wrap}
+.starters button{border:1px dashed var(--line-strong);background:transparent;border-radius:99px;padding:5px 11px;font-size:13px}
+.c-list{display:flex;flex-direction:column;gap:10px}
+.c-group h4{margin:0 0 6px;font-size:13px;color:var(--fg-2);display:flex;gap:6px;align-items:center}
+.comment{padding:10px 12px;border-radius:14px;background:var(--sunken);font-size:14px;line-height:1.55;display:flex;flex-direction:column;gap:2px;overflow-wrap:anywhere}
+.comment .who{font-size:12px;color:var(--fg-3);font-weight:600;display:flex;gap:8px;align-items:center}
+.comment.is-hidden{opacity:.5}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent-ink);font-size:12px;font-weight:700;text-decoration:underline}
+
+/* 7 돌아보기 */
+.reflect{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;align-items:start}
+textarea.input{min-height:84px;resize:vertical;line-height:1.6}
+.badge{border-radius:28px;padding:28px 22px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;color:#fff;background:radial-gradient(120% 90% at 20% 0%,var(--c-galaxy),transparent 60%),radial-gradient(120% 90% at 100% 40%,var(--c-pattern),transparent 60%),radial-gradient(120% 90% at 10% 100%,var(--c-bot),transparent 60%),#1b1b2b}
+.badge .orb{width:64px;height:64px;box-shadow:0 0 0 6px rgba(255,255,255,.15)}
+.badge h3{font-size:24px;font-weight:800;letter-spacing:-.02em}
+.badge p{opacity:.85;font-size:14px}
+.badge .who{font-size:28px;font-weight:900;letter-spacing:-.02em}
+.star-pick{display:flex;gap:4px}
+.star-pick button{border:0;background:transparent;font-size:30px;line-height:1;color:var(--line-strong);padding:2px}
+.star-pick button.on{color:var(--star)}
+
+/* 상단 타이머 */
+.timer{font-family:var(--font-num);font-variant-numeric:tabular-nums;font-weight:700}
+.timer.low{color:var(--bad);border-color:var(--bad)}
+
+@media (max-width:1000px){
+  .flow{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .apps{grid-template-columns:1fr}
+  .app-card{display:grid;grid-template-columns:220px minmax(0,1fr)}
+  .app-art{height:auto;min-height:180px}
+}
+@media (max-width:860px){
+  .planner,.reflect,.demo{grid-template-columns:1fr}
+  .preview{position:static}
+  .types,.ideas{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ipo{grid-template-columns:1fr}
+  .ipo .arrow{transform:rotate(90deg);height:18px}
+}
+@media (max-width:600px){
+  #viewName{display:none}
+  .flow{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .app-card{display:flex}
+  .app-art{min-height:0;height:130px}
+  .types,.ideas{grid-template-columns:1fr}
+  .invite{grid-template-columns:1fr}
+  .qr{display:none}
+  .rule-edit{grid-template-columns:auto minmax(0,1fr)}
+  .rule-edit .kw:nth-of-type(2){grid-column:1}
+  .kinds{grid-template-columns:1fr}
+  .kind-btn{flex-direction:row;justify-content:center;gap:8px;min-height:44px}
+}
+
+/* ================= 일러스트 리스킨 (ChatGPT 이미지) ================= */
+:root,:root[data-theme="light"]{--bg:#f5f2ff;--sidebar:#1d1747;--surface:#ffffff;--bubble:#efeaff;--hover:#ece6ff;--sunken:#f7f4ff;--line:#e3dcfb;--line-strong:#cfc5f5;--fg:#1d1a3a;--fg-2:#4b4870;--fg-3:#7f7ca3;--primary:#5536d6;--on-primary:#fff;--accent:#7c5cff;--accent-2:#b59bff;--accent-ink:#5536d6;--accent-soft:#ece6ff;--c-galaxy:#7c5cff;--c-galaxy-soft:#efeaff;--c-bot:#10a37f;--c-bot-soft:#e5f6f0;--c-pattern:#f2542d;--c-pattern-soft:#fdece6;--c-blue:#2f80ed;--c-blue-soft:#e6f0fd;--c-pink:#e0458f;--c-pink-soft:#fce8f1;--c-yellow:#d99a00;--c-yellow-soft:#fdf3d8;--canva:#7d2ae8;color-scheme:light}
+body{background:radial-gradient(1100px 600px at 105% -10%,#e5dcff,transparent 60%),radial-gradient(900px 520px at -10% 110%,#ffe6dc,transparent 60%),#f5f2ff}
+.main{background:transparent}
+.view-head h2,.section-title,.hero h1,.app-body h3,.bp-head h3,.invite h3,.badge h3,.badge .who,.post-body h3,.detail-head h2,.modal h2,.flow b,.brand span{font-family:"Jua","Noto Sans KR",sans-serif;font-weight:400;letter-spacing:0}
+.view-head h2{font-size:clamp(28px,3.8vw,38px);color:#2a1f6b}
+.section-title{font-size:22px;color:#2a1f6b}
+.eyebrow{color:#7c5cff}
+.sidebar{background:linear-gradient(180deg,#2d2275,#17123d);color:#fff}
+.sidebar .side-item,.sidebar .side-new{color:#ece8ff}
+.sidebar .side-item:hover,.sidebar .side-new:hover{background:rgba(255,255,255,.1)}
+.sidebar .side-item.active{background:rgba(255,255,255,.18)}
+.side-item .si-ico{background:linear-gradient(160deg,#ffe07a,#ffc23d);color:#5a3300;border-radius:50%;width:26px;height:26px}
+.side-label{color:#aaa3e6}
+.side-foot{border-top-color:rgba(255,255,255,.14)}
+.progress-pill{color:#d6d0ff}
+.progress-pill .bar{background:rgba(255,255,255,.2)}
+.sidebar .icon-btn{color:#fff}
+.brand span{font-size:20px}
+.side-suri{display:block;width:118px;margin:2px auto -4px;filter:drop-shadow(0 10px 14px rgba(0,0,0,.45));animation:hubFloat 4s ease-in-out infinite}
+@keyframes hubFloat{50%{transform:translateY(-8px)}}
+.orb{background:url(assets/suri_happy.webp) center/contain no-repeat!important;box-shadow:none!important;border-radius:0!important;animation:none!important}
+.brand .orb{width:40px;height:40px}
+.msg-ai .orb{width:46px;height:46px;margin-top:-6px}
+.demo-out .orb{width:40px;height:40px}
+.callout .orb{width:52px;height:52px}
+.bp-head .orb{width:54px;height:54px}
+.jbtn{--c1:#b59bff;--c2:#7c5cff;--c3:#4f2fd0;position:relative;border:0;border-radius:999px;padding:12px 26px 14px;min-height:50px;font-family:"Jua","Noto Sans KR",sans-serif;font-size:20px;color:#fff;background:linear-gradient(180deg,var(--c1),var(--c2) 60%);box-shadow:0 5px 0 var(--c3),0 12px 24px -8px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.45);text-shadow:0 2px 0 rgba(0,0,0,.18);transition:transform .08s,box-shadow .08s;display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.jbtn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--c3),0 6px 14px -8px rgba(0,0,0,.45)}
+.jbtn.gold{--c1:#ffe07a;--c2:#ffc23d;--c3:#c98200;color:#5a3300;text-shadow:0 1px 0 rgba(255,255,255,.4)}
+.jbtn.white{--c1:#ffffff;--c2:#f1efff;--c3:#c9c4ea;color:#4f2fd0;text-shadow:none}
+.btn{background:linear-gradient(180deg,#9a80ff,#7c5cff);box-shadow:0 3px 0 #4f2fd0}
+.btn-ghost{background:#fff;box-shadow:0 3px 0 #d9d2f5;color:#4f2fd0;border-color:#d9d2f5}
+/* 홈 히어로 */
+.hero{position:relative;border-radius:32px;overflow:hidden;padding:0;margin-top:14px;min-height:clamp(380px,52vh,520px);display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;text-align:left;background:#1d1747 url(assets/keyart.webp) center 30%/cover;box-shadow:0 30px 60px -30px rgba(40,20,120,.7)}
+.hero::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,12,60,.05) 0%,rgba(20,12,60,.35) 40%,rgba(20,12,60,.9) 100%)}
+.hero-in{position:relative;padding:28px clamp(20px,4vw,40px);display:flex;flex-direction:column;gap:10px;align-items:flex-start;max-width:720px}
+.hero .tag{background:rgba(255,255,255,.92);color:#4f2fd0;font-size:14px}
+.hero h1{font-size:clamp(34px,5.6vw,60px);line-height:1.1;color:#fff;text-shadow:0 4px 0 #3b23a8,0 12px 30px rgba(0,0,0,.5)}
+.hero .grad{background:none;-webkit-background-clip:initial;background-clip:initial;color:#ffd257}
+.hero .sub{color:#fff;font-weight:700;text-shadow:0 2px 10px rgba(0,0,0,.6)}
+.hero-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.hero-suri{position:absolute;right:clamp(10px,3vw,40px);bottom:18px;width:clamp(120px,18vw,210px);z-index:1;filter:drop-shadow(0 20px 24px rgba(0,0,0,.5));animation:hubFloat 4.2s ease-in-out infinite}
+.idea-box{display:flex;flex-direction:column;gap:14px;border-radius:28px;padding:20px;box-shadow:0 18px 40px -26px rgba(60,30,160,.5);border:2px solid #e3dcfb}
+.idea-head{display:flex;gap:12px;align-items:center}
+.idea-head img{width:64px;height:64px;object-fit:contain}
+.idea-head b{display:block;font-family:"Jua",sans-serif;font-weight:400;font-size:22px;color:#2a1f6b}
+.idea-head span{font-size:14px;color:var(--fg-2)}
+.idea-box .home-composer{max-width:none}
+.idea-box .home-chips{justify-content:flex-start}
+.idea-box .mini-thread{max-width:none}
+.flow button{border:2px solid #e3dcfb;border-radius:20px;box-shadow:0 6px 0 #e3dcfb}
+.flow .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:linear-gradient(160deg,#ffe07a,#ffc23d);color:#5a3300;font-size:14px}
+/* 체험 카드 */
+.app-art{height:170px;position:relative;overflow:hidden;background:#1d1747}
+.art-bg{position:absolute;inset:0;background-size:cover;background-position:center;transform:scale(1.05);transition:transform .6s}
+.app-card:hover .art-bg{transform:scale(1.12)}
+.art-char{position:absolute;right:10px;bottom:-6px;height:150px;filter:drop-shadow(0 12px 14px rgba(0,0,0,.5));animation:hubFloat 4s ease-in-out infinite}
+.app-card{border:2px solid #e3dcfb;box-shadow:0 20px 40px -28px rgba(60,30,160,.6)}
+.app-body h3{font-size:26px}
+.app-card .btn-open{border-radius:999px;font-family:"Jua",sans-serif;font-weight:400;font-size:19px;box-shadow:0 4px 0 rgba(0,0,0,.25)}
+/* 게시판 */
+.post{border:2px solid #e3dcfb}
+.post-art{height:118px}
+.ex-char{position:absolute;right:10px;bottom:-4px;height:104px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.45))}
+/* 배지 */
+.badge{background:radial-gradient(120% 90% at 20% 0%,#7c5cff,transparent 60%),radial-gradient(120% 90% at 100% 40%,#f2542d,transparent 60%),radial-gradient(120% 90% at 10% 100%,#10a37f,transparent 60%),#1b1846}
+.badge-img{width:min(220px,60%);filter:drop-shadow(0 16px 24px rgba(0,0,0,.5));animation:hubFloat 4s ease-in-out infinite}
+@media (max-width:860px){ .sidebar{background:linear-gradient(180deg,#2d2275,#17123d)} }
+@media (max-width:600px){ .hero-suri{display:none} .hero{min-height:400px} .hero-btns .jbtn{font-size:18px;padding:10px 20px 12px} .app-card{display:flex} .art-char{height:120px} }
+@media (max-width:1000px) and (min-width:601px){ .app-art{min-height:200px} }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <aside class="sidebar" aria-label="수업 순서">
+    <div class="side-head">
+      <div class="brand"><span class="orb spin" aria-hidden="true"></span><span>수학 AI 스튜디오</span></div>
+      <button class="icon-btn menu-btn" id="closeSide" aria-label="목록 닫기" data-icon="close"></button>
+    </div>
+    <button class="side-new" data-go="home"><span data-icon="edit" style="width:20px;height:20px;display:inline-grid"></span> 오늘의 미션</button>
+    <div class="side-label">수업 순서</div>
+    <nav class="side-list" id="sideNav"></nav>
+    <div class="side-foot">
+      <img class="side-suri" src="assets/suri_happy.webp" alt="">
+      <div class="progress-pill"><span>진행</span><div class="bar"><i id="progBar"></i></div><b class="num" id="progText">0/7</b></div>
+      <button class="side-new" id="teacherBtn"><span data-icon="map" style="width:20px;height:20px;display:inline-grid"></span> 선생님 메뉴</button>
+    </div>
+  </aside>
+  <div class="drawer-scrim"></div>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="수업 순서 열기" data-icon="menu"></button>
+      <button class="model-btn" id="modelBtn">수학 AI 스튜디오 <small id="viewName">4-1 영재</small> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="spacer"></div>
+      <button class="top-chip timer" id="timerChip" hidden title="누르면 타이머 멈춤"></button>
+      <button class="top-chip" data-go="share"><span aria-hidden="true">🖼️</span><span class="lbl">작품 전시관</span></button>
+    </header>
+
+    <div class="page" id="thread">
+
+      <!-- ============ 홈 ============ -->
+      <section class="view" data-view="home" id="v-home">
+        <div class="hero">
+          <img class="hero-suri" src="assets/suri_coder.webp" alt="AI 로봇 수리">
+          <div class="hero-in">
+            <span class="tag">2026 수학 영재 특강 · 초등 4학년</span>
+            <h1>나는 <span class="grad">수학 프로그램 디자이너</span></h1>
+            <p class="sub">SW·AI로 완성하는 나만의 수학 인공지능 프로그램</p>
+            <div class="hero-btns"><button class="jbtn gold" data-go="meet">▶ 수업 시작</button><button class="jbtn white" data-go="try">예시 앱 체험</button><button class="jbtn white" data-go="share">작품 전시관</button></div>
+          </div>
+        </div>
+        <div class="card idea-box">
+          <div class="idea-head"><img src="assets/suri_happy.webp" alt=""><div><b>아이디어 도우미 수리</b><span>만들고 싶은 수학 프로그램을 한 줄로 말하면 설계를 추천해 줘요</span></div></div>
+          <div class="mini-thread" id="threadInner"></div>
+          <div class="home-composer">
+            <div class="composer">
+              <input id="composerInput" type="text" autocomplete="off" placeholder="예: 각도를 맞히는 게임을 만들고 싶어" aria-label="아이디어 입력">
+              <button class="send" id="sendBtn" aria-label="보내기" data-icon="up"></button>
+            </div>
+            <div class="home-chips" id="homeChips"></div>
+          </div>
+        </div>
+        <div class="stack">
+          <h2 class="section-title">오늘의 순서</h2>
+          <div class="flow" id="flow"></div>
+        </div>
+      </section>
+
+      <!-- ============ 1 만나기 ============ -->
+      <section class="view" data-view="meet" id="v-meet" hidden>
+        <div class="view-head">
+          <span class="eyebrow">1단계 · 만나기</span>
+          <h2>수학 AI 프로그램은 어떻게 대답할까요?</h2>
+          <p>모든 프로그램은 <b>입력</b>을 받아 <b>규칙</b>대로 처리하고 <b>출력</b>을 보여 줘요. 오늘 우리가 만날 'GPT' 도우미들도 이 세 칸으로 움직여요.</p>
+        </div>
+        <div class="ipo">
+          <div class="box in"><span class="k">INPUT · 입력</span><b>사용자가 하는 일</b><span class="muted small">답을 쓰기, 버튼 누르기, 블록 쌓기</span></div>
+          <div class="arrow" aria-hidden="true">→</div>
+          <div class="box rule"><span class="k">RULE · 규칙</span><b>만약 ~이면 → ~한다</b><span class="muted small">맞았는지, 어디서 틀렸는지 판단하는 조건들</span></div>
+          <div class="arrow" aria-hidden="true">→</div>
+          <div class="box outp"><span class="k">OUTPUT · 출력</span><b>화면과 AI의 말</b><span class="muted small">칭찬, 힌트, 별, 움직이는 그림</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title">미니 프로그램 직접 돌려 보기 · 곱셈 도우미</div>
+          <div class="demo">
+            <div class="stack">
+              <div class="demo-q" aria-live="polite"><span id="dq">8 × 7</span> = ?</div>
+              <div class="row">
+                <input class="input" id="demoInput" inputmode="numeric" placeholder="답을 써 보세요 (일부러 틀려도 좋아요)" style="flex:1;min-width:0">
+                <button class="btn" id="demoBtn">확인</button>
+              </div>
+              <div class="demo-out" id="demoOut"><span class="orb" aria-hidden="true"></span><span>답을 넣으면 어떤 규칙이 움직이는지 오른쪽에서 불이 켜져요.</span></div>
+              <button class="btn btn-ghost btn-sm" id="demoNext" style="align-self:flex-start">다른 문제</button>
+            </div>
+            <div class="rules" id="demoRules"></div>
+          </div>
+        </div>
+        <div class="callout">
+          <span class="orb" aria-hidden="true"></span>
+          <p>ChatGPT 같은 큰 AI는 아주 많은 글을 읽으며 규칙을 <b>스스로 배운</b> 프로그램이에요. 오늘 체험할 앱의 도우미는 우리가 <b>직접 정한 규칙</b>으로 대답해요. 그래서 여러분도 규칙을 잘 설계하면, 친구를 도와주는 수학 AI를 만들 수 있어요.</p>
+        </div>
+        <div class="next-row"><button class="btn" data-go="try">예시 앱 체험하러 가기 →</button></div>
+      </section>
+
+      <!-- ============ 2 체험하기 ============ -->
+      <section class="view" data-view="try" id="v-try" hidden>
+        <div class="view-head">
+          <span class="eyebrow">2단계 · 체험하기</span>
+          <h2>선생님이 만든 수학 AI 프로그램 3개</h2>
+          <p>하나씩 열어서 직접 해 보세요. 그냥 놀지 말고 <b>디자이너의 눈</b>으로! 아래 관찰 미션을 체크하면서 체험해요.</p>
+        </div>
+        <div class="apps" id="appCards"></div>
+        <div class="next-row"><button class="btn" data-go="anatomy">프로그램 해부하러 가기 →</button></div>
+      </section>
+
+      <!-- ============ 3 해부하기 ============ -->
+      <section class="view" data-view="anatomy" id="v-anatomy" hidden>
+        <div class="view-head">
+          <span class="eyebrow">3단계 · 해부하기</span>
+          <h2>세 프로그램은 어떻게 설계되었을까요?</h2>
+          <p>같은 '수학 AI'라도 종류가 다 달라요. 표를 보고 내 프로그램은 어떤 종류로 만들지 골라 보세요.</p>
+        </div>
+        <div class="table-wrap">
+          <table class="cmp">
+            <thead><tr><th scope="col"></th>
+              <th scope="col"><span class="dot" style="background:var(--c-galaxy)"></span>넘버 갤럭시</th>
+              <th scope="col"><span class="dot" style="background:var(--c-bot)"></span>도형 코딩봇</th>
+              <th scope="col"><span class="dot" style="background:var(--c-pattern)"></span>패턴 AI 연구소</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">프로그램 종류</th><td>미션 퀘스트 게임</td><td>블록 코딩 시뮬레이터</td><td>AI 예측 실험실</td></tr>
+              <tr><th scope="row">단원</th><td>1 큰 수, 3 곱셈과 나눗셈</td><td>2 각도, 4 평면도형의 이동</td><td>5 막대그래프, 6 규칙과 관계</td></tr>
+              <tr><th scope="row">입력 (내가 하는 일)</th><td>선택지 누르기, 수 쓰기, 카드 놓기</td><td>명령 블록 쌓기, "오른쪽 3"처럼 말로 명령</td><td>다음 수 예측, 저울 맞추기, 막대 높이 바꾸기</td></tr>
+              <tr><th scope="row">규칙 (AI의 판단)</th><td>틀린 이유(자리 수, 계산)에 따라 다른 힌트</td><td>목표와 몇 칸, 어느 방향이 다른지 계산</td><td>수들의 차이·곱을 비교해 규칙과 확신도를 계산</td></tr>
+              <tr><th scope="row">출력 (보여 주는 것)</th><td>자릿값 판 불빛, 우주선 워프, 별</td><td>움직이는 도형, 레이저, 블록 수 별점</td><td>저울 기울기, 막대그래프, AI 예측 카드</td></tr>
+              <tr><th scope="row">디자인 비밀</th><td>ChatGPT로 그린 우주 그림 + 네 자리씩 색띠로 묶은 큰 수</td><td>ChatGPT로 그린 작업실 + 블록 색(밀기 파랑·뒤집기 분홍·돌리기 주황)</td><td>ChatGPT로 그린 섬 연구소 + AI도 틀린다는 'O/X 판정' 장면</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="stack">
+          <h2 class="section-title">수학 프로그램 종류 메뉴판</h2>
+          <div class="types" id="types"></div>
+        </div>
+        <div class="stack">
+          <h2 class="section-title">단원별 아이디어 은행 <span class="tag gray">누르면 설계 카드에 바로 들어가요</span></h2>
+          <div class="ideas" id="ideas"></div>
+        </div>
+        <div class="next-row"><button class="btn" data-go="design">내 프로그램 설계하러 가기 →</button></div>
+      </section>
+
+      <!-- ============ 4 설계하기 ============ -->
+      <section class="view" data-view="design" id="v-design" hidden>
+        <div class="view-head">
+          <span class="eyebrow">4단계 · 설계하기</span>
+          <h2>내 수학 AI 프로그램 설계 카드</h2>
+          <p>빈칸을 채우면 오른쪽에 <b>캔바 AI에게 보낼 주문서(프롬프트)</b>가 저절로 만들어져요. 설계가 꼼꼼할수록 AI가 더 멋지게 만들어 줘요.</p>
+        </div>
+        <div class="planner">
+          <div class="form">
+            <div class="card">
+              <div class="card-title">① 무엇을 만들까?</div>
+              <div class="field"><label for="pName">프로그램 이름</label><input class="input" id="pName" maxlength="30" placeholder="예: 각도 스나이퍼"></div>
+              <div class="field"><label for="pUnit">어떤 단원?</label>
+                <select class="input" id="pUnit"><option value="1">1단원 큰 수</option><option value="2">2단원 각도</option><option value="3">3단원 곱셈과 나눗셈</option><option value="4">4단원 평면도형의 이동</option><option value="5">5단원 막대그래프</option><option value="6">6단원 규칙과 관계</option></select></div>
+              <div class="field"><label id="pTypeLbl">프로그램 종류</label><div class="seg" id="pType" role="group" aria-labelledby="pTypeLbl"></div></div>
+              <div class="field"><label for="pWho">누구를 위한 프로그램?</label><input class="input" id="pWho" maxlength="40" placeholder="예: 각도가 헷갈리는 우리 반 친구들"></div>
+            </div>
+            <div class="card">
+              <div class="card-title">② 꼭 들어갈 기능 3가지</div>
+              <div class="field"><label for="pF1">기능 1</label><input class="input" id="pF1" maxlength="60" placeholder="예: 화면에 나온 각을 보고 각도를 어림해서 쓰기"></div>
+              <div class="field"><label for="pF2">기능 2</label><input class="input" id="pF2" maxlength="60" placeholder="예: 실제 각도와 차이가 작을수록 점수를 많이 주기"></div>
+              <div class="field"><label for="pF3">기능 3</label><input class="input" id="pF3" maxlength="60" placeholder="예: 10문제가 끝나면 최고 점수 보여 주기"></div>
+            </div>
+            <div class="card">
+              <div class="card-title">③ AI 도우미와 규칙</div>
+              <div class="grid-2">
+                <div class="field"><label for="pBot">도우미 이름</label><input class="input" id="pBot" maxlength="16" placeholder="예: 각도GPT"></div>
+                <div class="field"><label for="pTone">말투</label>
+                  <select class="input" id="pTone"><option>친절한 선생님</option><option>신나는 게임 진행자</option><option>씩씩한 우주 대장</option><option>차분한 로봇</option><option>장난꾸러기 친구</option></select></div>
+              </div>
+              <div class="stack" id="pRules"></div>
+            </div>
+            <div class="card">
+              <div class="card-title">④ 디자인</div>
+              <div class="field"><label id="pColorLbl">주요 색</label><div class="swatches" id="pColor" role="group" aria-labelledby="pColorLbl"></div></div>
+              <div class="field"><label id="pMoodLbl">분위기</label><div class="seg" id="pMood" role="group" aria-labelledby="pMoodLbl"></div></div>
+              <div class="grid-2">
+                <div class="field"><label for="pCount">문제 수</label><select class="input" id="pCount"><option>5</option><option selected>10</option><option>15</option></select></div>
+                <div class="field"><label for="pLevel">난이도</label><select class="input" id="pLevel"><option>교과서 기본</option><option selected>교과서 + 도전 문제</option><option>영재 도전</option></select></div>
+              </div>
+            </div>
+          </div>
+          <div class="preview">
+            <div class="card">
+              <div class="bp-head"><span class="orb" aria-hidden="true" id="bpOrb"></span><div><div class="card-title" style="margin:0">설계도</div><h3 id="bpName">이름을 지어 주세요</h3></div></div>
+              <dl class="blueprint" id="bp" style="margin:14px 0 0"></dl>
+            </div>
+            <div class="card">
+              <div class="card-title" style="justify-content:space-between"><span>캔바 AI 주문서 (프롬프트)</span><span class="tag" id="promptLen">0자</span></div>
+              <div class="prompt-box" id="promptBox" tabindex="0"></div>
+              <div class="row" style="margin-top:12px">
+                <button class="btn" id="copyPrompt">주문서 복사하기</button>
+                <button class="btn btn-ghost" data-go="make">캔바로 만들러 가기 →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 5 만들기 ============ -->
+      <section class="view" data-view="make" id="v-make" hidden>
+        <div class="view-head">
+          <span class="eyebrow">5단계 · 만들기</span>
+          <h2>캔바 AI로 내 프로그램 완성하기</h2>
+          <p>먼저 우리 반 캔바에 들어가야 작품을 만들 수 있어요. 순서대로 따라 하세요.</p>
+        </div>
+        <div class="invite">
+          <div class="stack">
+            <span class="tag" style="align-self:flex-start;background:color-mix(in srgb,var(--canva) 16%,transparent);color:var(--canva)">캔바 교육용 · 우리 반 초대</span>
+            <h3>우리 반 캔바에 입장하기</h3>
+            <p class="muted small">버튼을 누르고 로그인한 뒤 <b>참여</b>를 누르면 우리 반 팀에 들어가요. 한 번만 하면 돼요.</p>
+            <div class="row">
+              <a class="btn btn-canva" id="canvaLink" target="_blank" rel="noopener">캔바 입장 링크 열기 ↗</a>
+              <button class="btn btn-ghost" id="copyCanva">링크 복사</button>
+            </div>
+          </div>
+          <div class="qr" id="canvaQR" aria-label="캔바 입장 QR 코드"></div>
+        </div>
+        <div class="steps" id="makeSteps"></div>
+        <div class="card">
+          <div class="card-title">고치기 주문 모음 · 누르면 복사돼요</div>
+          <div class="fix-chips" id="fixChips"></div>
+        </div>
+        <div class="card sunken">
+          <div class="card-title">AI가 만든 수학, 꼭 확인!</div>
+          <div class="check" style="background:transparent;padding:0">
+            <label><input type="checkbox" id="chk1"> 내가 직접 3문제 이상 풀어서 정답 검사가 맞는지 확인했다.</label>
+            <label><input type="checkbox" id="chk2"> 수학 용어와 내용이 4학년 교과서와 맞다 (예: 예각은 0°보다 크고 직각보다 작은 각).</label>
+            <label><input type="checkbox" id="chk3"> 처음 보는 친구도 설명 없이 쓸 수 있다.</label>
+            <label><input type="checkbox" id="chk4"> 틀렸을 때 AI 도우미가 힌트를 준다.</label>
+          </div>
+        </div>
+        <div class="next-row"><button class="btn" data-go="share">작품 올리러 가기 →</button></div>
+      </section>
+
+      <!-- ============ 6 공유하기 ============ -->
+      <section class="view" data-view="share" id="v-share" hidden>
+        <div class="view-head">
+          <span class="eyebrow">6단계 · 공유하기</span>
+          <h2>작품 전시관</h2>
+          <p>내 작품을 올리고, 친구 작품을 직접 해 본 뒤 <b>잘한 점</b>과 <b>인상 깊은 점</b>을 남겨 주세요. 선생님 예시 작품에도 남길 수 있어요.</p>
+        </div>
+        <div class="board-bar">
+          <div class="row">
+            <button class="btn" id="newPostBtn">＋ 내 작품 올리기</button>
+            <span class="status" id="boardStatus"><i></i><span>확인하는 중</span></span>
+          </div>
+          <div class="filters" id="filters" role="group" aria-label="단원으로 거르기"></div>
+        </div>
+        <div class="gallery" id="gallery"></div>
+        <div class="next-row"><button class="btn btn-ghost" data-go="reflect">돌아보기 →</button></div>
+      </section>
+
+      <!-- ============ 7 돌아보기 ============ -->
+      <section class="view" data-view="reflect" id="v-reflect" hidden>
+        <div class="view-head">
+          <span class="eyebrow">7단계 · 돌아보기</span>
+          <h2>오늘의 디자이너 노트</h2>
+          <p>짧게 써도 괜찮아요. 쓴 내용은 이 기기에만 저장돼요.</p>
+        </div>
+        <div class="reflect">
+          <div class="card stack">
+            <div class="field"><label for="r1">내가 설계한 규칙 중 가장 마음에 드는 것은?</label><textarea class="input" id="r1" placeholder="예: 두 번 틀리면 풀이를 단계별로 보여 주는 규칙"></textarea></div>
+            <div class="field"><label for="r2">친구 작품에서 배운 점은?</label><textarea class="input" id="r2"></textarea></div>
+            <div class="field"><label for="r3">다음에 내 프로그램에 더 넣고 싶은 기능은?</label><textarea class="input" id="r3"></textarea></div>
+            <div class="field"><label id="r4l">오늘 나의 디자이너 별점</label><div class="star-pick" id="r4" role="group" aria-labelledby="r4l"></div></div>
+          </div>
+          <div class="badge">
+            <img class="badge-img" src="assets/badge_designer.webp" alt="수학 프로그램 디자이너 배지">
+            <p>2026 수학 영재 특강</p>
+            <h3>수학 프로그램 디자이너</h3>
+            <div class="who" id="badgeWho">이름</div>
+            <p id="badgeProg">나만의 수학 AI 프로그램을 설계하고 공유했어요</p>
+            <input class="input" id="badgeName" maxlength="12" placeholder="내 이름 쓰기" style="max-width:220px;text-align:center;background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff">
+            <button class="btn" id="badgeBtn" style="background:#fff;color:#111">배지 받기</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="_design/base.js"></script>
+<script>
+(function(){
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const esc = s => Shell.esc(s);
+const CANVA_URL = 'https://www.canva.com/brand/join?token=zkLOaYNLTagJXNaAPLLU7g&brandingVariant=edu&invitationDestinationType=group';
+const TEACHER_KEY_HINT = '2022';
+const UNITS = {1:'큰 수',2:'각도',3:'곱셈과 나눗셈',4:'평면도형의 이동',5:'막대그래프',6:'규칙과 관계'};
+
+/* ---------------- 화면 이동 ---------------- */
+const VIEWS = [
+  {id:'home',   n:'',  t:'오늘의 미션', d:''},
+  {id:'meet',   n:'1', t:'만나기',     d:'수학 AI는 어떻게 대답할까'},
+  {id:'try',    n:'2', t:'체험하기',   d:'예시 앱 3개 해 보기'},
+  {id:'anatomy',n:'3', t:'해부하기',   d:'설계의 비밀 찾기'},
+  {id:'design', n:'4', t:'설계하기',   d:'설계 카드와 주문서'},
+  {id:'make',   n:'5', t:'만들기',     d:'캔바 AI로 완성'},
+  {id:'share',  n:'6', t:'공유하기',   d:'작품 올리고 칭찬하기'},
+  {id:'reflect',n:'7', t:'돌아보기',   d:'디자이너 노트와 배지'}
+];
+const visited = new Set(Store.get('mas-hub-visited', []));
+function renderNav(){
+  $('#sideNav').innerHTML = VIEWS.filter(v=>v.n).map(v=>`<button class="side-item" data-go="${v.id}"><span class="si-ico num">${v.n}</span><span class="si-text">${v.t}</span>${visited.has(v.id)?'<span class="si-meta" style="color:var(--good)">✓</span>':''}${v.id==='share'?'<span class="tag gray num" id="navCount" hidden></span>':''}</button>`).join('');
+  $('#flow').innerHTML = VIEWS.filter(v=>v.n).map(v=>`<button data-go="${v.id}" class="${visited.has(v.id)?'done':''}"><span class="n">${v.n}</span><b>${v.t}</b><span>${v.d}</span></button>`).join('');
+  const done = VIEWS.filter(v=>v.n && visited.has(v.id)).length;
+  $('#progBar').style.width = (done/7*100)+'%'; $('#progText').textContent = done+'/7';
+}
+let current = 'home';
+function go(id, push=true){
+  if(!VIEWS.find(v=>v.id===id)) id='home';
+  current = id;
+  $$('.view').forEach(s=>s.hidden = s.dataset.view!==id);
+  $$('#sideNav .side-item').forEach(b=>b.classList.toggle('active', b.dataset.go===id));
+  const v = VIEWS.find(v=>v.id===id);
+  $('#viewName').textContent = v.n ? v.n+'단계 · '+v.t : '4-1 영재';
+  if(v.n){ visited.add(id); Store.set('mas-hub-visited', [...visited]); }
+  renderNav(); $$('#sideNav .side-item').forEach(b=>b.classList.toggle('active', b.dataset.go===id));
+  $('#thread').scrollTop = 0; Shell.closeDrawer();
+  if(push){ try{ history.replaceState(null,'','#'+id); }catch(e){} }
+  if(id==='share') Board.refresh();
+  if(id==='make') drawQR();
+}
+document.addEventListener('click', e=>{ const t = e.target.closest('[data-go]'); if(t){ e.preventDefault(); Sound.tick(); go(t.dataset.go); } });
+window.addEventListener('hashchange', ()=>{ const h = location.hash.slice(1); if(h && h!==current) go(h,false); });
+
+/* ---------------- 홈: 아이디어 도우미 ---------------- */
+const TYPES = [
+  {k:'퀴즈쇼', d:'문제를 내고 맞히면 점수. 힌트와 해설이 있는 퀴즈', kw:['퀴즈','문제','시험']},
+  {k:'게임', d:'점수·레벨·시간 제한이 있는 도전 게임', kw:['게임','대결','레벨','점수']},
+  {k:'계산기', d:'수를 넣으면 계산 과정을 그림으로 보여 주는 도구', kw:['계산기','계산','변환']},
+  {k:'시뮬레이터', d:'도형이나 물체가 움직이는 모습을 직접 조종', kw:['시뮬','움직','코딩','조종','로봇']},
+  {k:'데이터 도구', d:'자료를 모아 표와 그래프로 바꿔 주는 도구', kw:['그래프','투표','조사','자료','데이터']},
+  {k:'AI 예측기', d:'규칙을 찾아 다음을 예측하고 이유를 설명', kw:['예측','맞히','AI','인공지능','패턴']}
+];
+const UNIT_KW = {1:['큰 수','큰수','억','조','만','자릿값','뛰어'],2:['각','각도','예각','둔각','직각','각도기'],3:['곱셈','나눗셈','곱하기','나누기','몫','나머지','곱','나눠'],4:['밀기','뒤집','돌리','도형','이동','퍼즐','칠교','무늬'],5:['그래프','막대','투표','조사','자료'],6:['규칙','패턴','배열','등호','저울','다음 수']};
+function guessUnit(t){ let best=0,score=0; for(const u in UNIT_KW){ const s = UNIT_KW[u].filter(w=>t.includes(w)).length; if(s>score){score=s;best=+u;} } return best; }
+function guessType(t){ for(const ty of TYPES){ if(ty.kw.some(w=>t.includes(w))) return ty.k; } return ''; }
+const IDEAS = {
+  1:[{t:'억·조 읽기 퀴즈쇼', d:'큰 수를 보고 바르게 읽기, 자릿값 맞히기', type:'퀴즈쇼'},{t:'가장 큰 수 만들기 대결', d:'수 카드로 AI와 누가 더 큰 수를 만드나', type:'게임'}],
+  2:[{t:'각도 스나이퍼', d:'각을 보고 어림, 오차가 작을수록 고득점', type:'게임'},{t:'예각·둔각 분류 로봇', d:'각을 보여 주면 로봇이 분류, 내가 검사', type:'AI 예측기'}],
+  3:[{t:'곱셈 사다리 타기', d:'사다리 끝에서 곱을 맞히는 게임', type:'게임'},{t:'나눗셈 묶음 계산기', d:'몫과 나머지를 묶음 그림으로 보여 줌', type:'계산기'}],
+  4:[{t:'도형 이동 퍼즐', d:'밀고 뒤집고 돌려서 빈칸에 쏙', type:'시뮬레이터'},{t:'규칙 무늬 공방', d:'조각을 돌려 찍어 나만의 무늬 만들기', type:'시뮬레이터'}],
+  5:[{t:'우리 반 투표 그래프', d:'버튼을 누르면 막대가 자라는 투표판', type:'데이터 도구'},{t:'그래프 읽기 탐정', d:'막대그래프를 보고 단서를 찾는 퀴즈', type:'퀴즈쇼'}],
+  6:[{t:'다음 수 맞히기 AI', d:'수 4개를 넣으면 AI가 규칙과 다음 수 예측', type:'AI 예측기'},{t:'저울 맞추기 게임', d:'등호 양쪽이 같아지게 수를 넣기', type:'게임'}]
+};
+Shell.init({ onSubmit: async (text)=>{
+  Shell.user(text); Shell.lock(true);
+  const u = guessUnit(text), ty = guessType(text);
+  if(!u && !ty){
+    await Shell.ai('좋은 시작이에요! 어떤 <b>단원</b>으로 만들지 한 단어만 더 알려 주세요. 예를 들어 <span class="hl">각도</span>, <span class="hl">큰 수</span>, <span class="hl">규칙</span> 같은 말이요.', {speed:10});
+    Shell.lock(false); return;
+  }
+  const unit = u || 4, type = ty || IDEAS[unit][0].type, idea = IDEAS[unit].find(i=>i.type===type) || IDEAS[unit][0];
+  const w = Shell.el('div','card');
+  w.innerHTML = `<div class="card-title">추천 설계</div><div class="stack"><div class="row"><span class="tag">${unit}단원 ${UNITS[unit]}</span><span class="tag gray">${esc(type)}</span></div><b style="font-size:18px">${esc(idea.t)}</b><span class="muted small">${esc(idea.d)}</span><div class="row"><button class="btn btn-sm" data-act="plan">이 아이디어로 설계하기</button><button class="btn btn-ghost btn-sm" data-go="try">먼저 예시 앱 보기</button></div></div>`;
+  w.querySelector('[data-act="plan"]').onclick = ()=>{ prefill({name:'', unit, type, idea:text}); go('design'); };
+  await Shell.ai(`멋진 아이디어예요! <b>${unit}단원 ${UNITS[unit]}</b>${ty?'을 <b>'+esc(ty)+'</b>로':' 단원이네요. 이런 모양으로'} 만들어 보면 어떨까요? 설계 카드에 바로 옮겨 드릴게요.`, {widget:w, speed:10});
+  Shell.lock(false);
+}});
+// 홈의 대화는 페이지 중간에 있으므로 '맨 아래로' 대신 마지막 말이 보이게만 스크롤
+Shell.scroll = ()=>{ const last = $('#threadInner').lastElementChild; if(last && last.scrollIntoView) last.scrollIntoView({block:'nearest'}); };
+$('#homeChips').innerHTML =['각도 맞히기 게임 만들고 싶어','큰 수 읽기 퀴즈','다음 수를 예측하는 AI','막대그래프 투표 도구'].map(t=>`<button class="chip" type="button">${t}</button>`).join('');
+$$('#homeChips .chip').forEach(c=>c.onclick=()=>{ $('#composerInput').value = c.textContent; Shell.submit(); });
+
+/* ---------------- 1 만나기: 미니 프로그램 ---------------- */
+let dA=8,dB=7;
+const demoRules = [
+  {c:'만약 답 = 정답', o:'→ "정답! 별 1개" + 다음 문제'},
+  {c:'만약 답이 바로 옆 단의 답', o:'→ "한 칸 옆을 봤나 봐요" 힌트'},
+  {c:'만약 숫자가 아님', o:'→ "숫자로 써 주세요"'},
+  {c:'그 밖에 틀림', o:'→ "같은 수를 여러 번 더해 보세요" 힌트'}
+];
+$('#demoRules').innerHTML = demoRules.map((r,i)=>`<div class="rule-line" data-i="${i}"><span class="no">${i+1}</span><span><b>${r.c}</b> ${r.o}</span></div>`).join('');
+function demoCheck(){
+  const raw = $('#demoInput').value.trim(), v = Number(raw.replace(/[^\d-]/g,''));
+  let i, msg;
+  if(!raw || !/\d/.test(raw)){ i=2; msg='숫자로 써 주세요. 예: 56'; }
+  else if(v===dA*dB){ i=0; msg=`정답! ${dA} × ${dB} = ${dA*dB}. 별 1개를 줄게요 ★`; Sound.good(); }
+  else if([dA*(dB-1),dA*(dB+1),(dA-1)*dB,(dA+1)*dB].includes(v)){ i=1; msg=`아깝다! ${v}는 바로 옆 칸의 답이에요. ${dA}단을 다시 세어 볼까요?`; Sound.bad(); }
+  else { i=3; msg=`${dA}를 ${dB}번 더해 보세요: ${Array(dB).fill(dA).join(' + ')}`; Sound.bad(); }
+  $$('#demoRules .rule-line').forEach(el=>el.classList.toggle('fire', +el.dataset.i===i));
+  $('#demoOut').innerHTML = '<span class="orb" aria-hidden="true"></span><span>'+esc(msg)+'</span>';
+}
+$('#demoBtn').onclick = demoCheck;
+$('#demoInput').addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.isComposing) demoCheck(); });
+$('#demoNext').onclick = ()=>{ dA = 3+Math.floor(Math.random()*7); dB = 3+Math.floor(Math.random()*7); $('#dq').textContent = dA+' × '+dB; $('#demoInput').value=''; $$('#demoRules .rule-line').forEach(el=>el.classList.remove('fire')); $('#demoOut').innerHTML='<span class="orb" aria-hidden="true"></span><span>새 문제예요. 이번에는 어떤 규칙에 불이 켜질까요?</span>'; };
+
+/* ---------------- 2 체험하기 ---------------- */
+const APPS = [
+  {id:'galaxy', cls:'galaxy', name:'넘버 갤럭시', gpt:'갤럭시GPT', url:'apps/number-galaxy.html', units:['1 큰 수','3 곱셈과 나눗셈'], type:'미션 퀘스트 게임',
+   desc:'우주 탐사 로봇 수리와 함께 억·조 단위의 큰 수를 해독하고, 나로호·누리호·다누리호 예산을 비교하고, 연료와 보급품을 곱셈·나눗셈으로 계산해요.',
+   obs:['일부러 한 번 틀려 보고, AI가 어떤 힌트를 주는지 보기','네 자리씩 색이 다른 자릿값 판의 비밀 찾기','오른쪽 위 \'설계도 보기\' 눌러 보기']},
+  {id:'bot', cls:'bot', name:'도형 코딩봇', gpt:'코딩봇GPT', url:'apps/shape-coding-bot.html', units:['2 각도','4 평면도형의 이동'], type:'블록 코딩 시뮬레이터',
+   desc:'밀기·뒤집기·돌리기 블록으로 도형을 목표 자리에 옮기는 코딩 퍼즐. 입력창에 "오른쪽 3"이라고 말해도 알아들어요.',
+   obs:['입력창에 "시계 90"이라고 말로 명령해 보기','가장 짧은 코드로 별 3개 받아 보기','틀렸을 때 AI가 몇 칸 차이라고 하는지 보기']},
+  {id:'pattern', cls:'pattern', name:'패턴 AI 연구소', gpt:'패턴GPT', url:'apps/pattern-ai-lab.html', units:['5 막대그래프','6 규칙과 관계'], type:'AI 예측 실험실',
+   desc:'AI가 데이터에서 규칙을 찾아 다음을 예측해요. 그런데 AI도 틀릴 수 있어요! 틀린 AI를 잡아내고, AI를 이기는 규칙도 만들어 봐요.',
+   obs:['AI가 틀린 예측을 찾아 X 눌러 보기','저울이 수평이 되는 순간 보기','도전 미션에서 AI를 이기는 수열 만들기']}
+];
+const ART = {galaxy:['assets/bg_galaxy.webp','assets/suri_space.webp'], bot:['assets/bg_workshop.webp','assets/suri_coder.webp'], pattern:['assets/bg_lab.webp','assets/suri_lab.webp']};
+function appArt(id){ const [bg,ch]=ART[id]; return `<div class="art-bg" style="background-image:url('${bg}')"></div><img class="art-char" src="${ch}" alt="">`; }
+const obsState = Store.get('mas-hub-obs', {});
+$('#appCards').innerHTML = APPS.map(a=>`<article class="app-card ${a.cls}"><div class="app-art">${appArt(a.id)}</div><div class="app-body"><span class="gpt-pill">${a.gpt} 4-1</span><h3>${a.name}</h3><div class="units">${a.units.map(u=>`<span class="tag gray">${u}</span>`).join('')}<span class="tag gray">${a.type}</span></div><p class="muted small">${a.desc}</p><div class="check"><b class="small">관찰 미션</b>${a.obs.map((o,i)=>`<label><input type="checkbox" id="obs-${a.id}-${i}" ${obsState[a.id+i]?'checked':''} data-k="${a.id+i}"> ${o}</label>`).join('')}</div><a class="btn btn-open" href="${a.url}" target="_blank" rel="noopener">${a.name} 체험하기 ↗</a></div></article>`).join('');
+$$('#appCards input[type=checkbox]').forEach(c=>c.onchange=()=>{ obsState[c.dataset.k]=c.checked; Store.set('mas-hub-obs', obsState); if(c.checked) Sound.pop(); });
+
+/* ---------------- 3 해부하기 ---------------- */
+$('#types').innerHTML = TYPES.map(t=>`<div class="type"><b>${t.k}</b><span>${t.d}</span></div>`).join('');
+$('#ideas').innerHTML = Object.keys(IDEAS).map(u=>`<div class="unit-col"><h4><span class="num">${u}</span>${UNITS[u]}</h4>${IDEAS[u].map((i,k)=>`<button class="idea" data-u="${u}" data-k="${k}"><b>${i.t}</b><span>${i.type} · ${i.d}</span></button>`).join('')}</div>`).join('');
+$$('#ideas .idea').forEach(b=>b.onclick=()=>{ const i = IDEAS[b.dataset.u][b.dataset.k]; prefill({name:i.t, unit:+b.dataset.u, type:i.type, idea:i.d}); go('design'); toast('설계 카드에 옮겼어요'); });
+
+/* ---------------- 4 설계하기 ---------------- */
+const COLORS = [{k:'violet',n:'보라',v:'--c-galaxy'},{k:'green',n:'초록',v:'--c-bot'},{k:'coral',n:'코랄',v:'--c-pattern'},{k:'blue',n:'파랑',v:'--c-blue'},{k:'pink',n:'분홍',v:'--c-pink'},{k:'yellow',n:'노랑',v:'--c-yellow'}];
+const MOODS = ['깔끔한 챗GPT 스타일','우주','바다','숲속','미래 도시','귀여운 동물'];
+const TRIGGERS = ['정답을 맞히면','틀리면','두 번 틀리면','연속 3번 맞히면','모든 문제를 끝내면','시간이 다 되면'];
+const defaultPlan = {name:'',unit:2,type:'게임',who:'',f1:'',f2:'',f3:'',bot:'',tone:'친절한 선생님',color:'violet',mood:'깔끔한 챗GPT 스타일',count:'10',level:'교과서 + 도전 문제',
+  rules:[{w:'정답을 맞히면',d:'칭찬하고 별 1개를 준다'},{w:'틀리면',d:'정답 대신 힌트를 먼저 준다'},{w:'모든 문제를 끝내면',d:'점수와 배지를 보여 준다'}]};
+let plan = Object.assign({}, defaultPlan, Store.get('mas-hub-plan', {}));
+if(!Array.isArray(plan.rules) || plan.rules.length!==3) plan.rules = defaultPlan.rules.map(r=>({...r}));
+function seg(el, list, key){
+  el.innerHTML = list.map(x=>`<button type="button" aria-pressed="${plan[key]===x}">${x}</button>`).join('');
+  $$('button', el).forEach(b=>b.onclick=()=>{ plan[key]=b.textContent; $$('button', el).forEach(x=>x.setAttribute('aria-pressed', x===b)); Sound.tick(); syncPlan(); });
+}
+function drawPlanner(){
+  $('#pName').value = plan.name; $('#pUnit').value = plan.unit; $('#pWho').value = plan.who;
+  $('#pF1').value = plan.f1; $('#pF2').value = plan.f2; $('#pF3').value = plan.f3; $('#pBot').value = plan.bot; $('#pTone').value = plan.tone;
+  $('#pCount').value = plan.count; $('#pLevel').value = plan.level;
+  seg($('#pType'), TYPES.map(t=>t.k), 'type'); seg($('#pMood'), MOODS, 'mood');
+  $('#pColor').innerHTML = COLORS.map(c=>`<button type="button" class="swatch" style="background:var(${c.v})" aria-label="${c.n}" title="${c.n}" aria-pressed="${plan.color===c.k}" data-k="${c.k}"></button>`).join('');
+  $$('#pColor .swatch').forEach(b=>b.onclick=()=>{ plan.color=b.dataset.k; $$('#pColor .swatch').forEach(x=>x.setAttribute('aria-pressed', x===b)); Sound.tick(); syncPlan(); });
+  $('#pRules').innerHTML = plan.rules.map((r,i)=>`<div class="rule-edit"><span class="kw">만약</span><select class="input" id="rw${i}" aria-label="규칙 ${i+1} 조건">${TRIGGERS.map(t=>`<option ${t===r.w?'selected':''}>${t}</option>`).join('')}</select><span class="kw">→</span><input class="input" id="rd${i}" maxlength="50" value="${esc(r.d)}" aria-label="규칙 ${i+1} 행동"></div>`).join('');
+  syncPlan(true);
+}
+const formIds = ['pName','pUnit','pWho','pF1','pF2','pF3','pBot','pTone','pCount','pLevel','rw0','rw1','rw2','rd0','rd1','rd2'];
+document.addEventListener('input', e=>{ if(formIds.includes(e.target.id)) syncPlan(); });
+document.addEventListener('change', e=>{ if(formIds.includes(e.target.id)) syncPlan(); });
+function readForm(){
+  plan.name=$('#pName').value.trim(); plan.unit=+$('#pUnit').value; plan.who=$('#pWho').value.trim();
+  plan.f1=$('#pF1').value.trim(); plan.f2=$('#pF2').value.trim(); plan.f3=$('#pF3').value.trim();
+  plan.bot=$('#pBot').value.trim(); plan.tone=$('#pTone').value; plan.count=$('#pCount').value; plan.level=$('#pLevel').value;
+  plan.rules = [0,1,2].map(i=>({w:$('#rw'+i).value, d:$('#rd'+i).value.trim()}));
+}
+function buildPrompt(p){
+  const name = p.name || '나만의 수학 프로그램', bot = p.bot || (name.replace(/\s/g,'').slice(0,6)+'GPT');
+  const feats = [p.f1,p.f2,p.f3].filter(Boolean);
+  const color = (COLORS.find(c=>c.k===p.color)||COLORS[0]).n;
+  const lines = [
+    `초등학교 4학년 수학 ${p.unit}단원 '${UNITS[p.unit]}'을 공부하는 웹앱을 만들어 줘.`,
+    ``,
+    `■ 앱 이름: ${name}`,
+    `■ 앱 종류: ${p.type}`,
+    `■ 누구를 위한 앱: ${p.who || '4학년 친구들'}`,
+    ``,
+    `■ 꼭 들어갈 기능`,
+    ...(feats.length? feats.map((f,i)=>`${i+1}. ${f}`) : ['1. (기능을 적어 주세요)']),
+    ``,
+    `■ AI 도우미`,
+    `- 이름은 '${bot}', 말투는 ${p.tone} 말투.`,
+    `- 화면 한쪽에 말풍선으로 짧게 말해 줘.`,
+    ``,
+    `■ 규칙 (만약 ~이면 → ~한다)`,
+    ...p.rules.filter(r=>r.d).map(r=>`- 만약 ${r.w} → ${r.d}`),
+    ``,
+    `■ 문제`,
+    `- 문제는 ${p.count}개, 난이도는 '${p.level}'.`,
+    `- 문제는 매번 무작위로 바뀌게 하고, 정답은 꼭 코드로 계산해서 검사해 줘.`,
+    `- 수학 용어와 내용은 4학년 교과서에 맞게, 틀린 내용이 없게 해 줘.`,
+    ``,
+    `■ 디자인`,
+    `- 분위기: ${p.mood}, 주요 색: ${color}.`,
+    `- 버튼과 글씨는 크고 둥글게, 태블릿과 노트북에서 모두 잘 보이게.`,
+    `- 첫 화면에 앱 이름, 시작 버튼, 사용 방법 한 줄을 보여 줘.`
+  ];
+  return lines.join('\n');
+}
+function syncPlan(skipRead){
+  if(!skipRead) readForm();
+  Store.set('mas-hub-plan', plan);
+  const c = COLORS.find(c=>c.k===plan.color)||COLORS[0];
+  $('#bpOrb').style.background = `radial-gradient(circle at 30% 28%,rgba(255,255,255,.95) 0 11%,transparent 12%),conic-gradient(from 200deg,var(${c.v}),color-mix(in srgb,var(${c.v}) 55%,#fff),var(${c.v}))`;
+  $('#bpName').textContent = plan.name || '이름을 지어 주세요';
+  const feats = [plan.f1,plan.f2,plan.f3].filter(Boolean);
+  $('#bp').innerHTML = [
+    ['누구를 위해', esc(plan.who || '아직 비어 있어요')],
+    ['목표', `${plan.unit}단원 ${UNITS[plan.unit]} · ${esc(plan.type)}`],
+    ['입력', feats.length? feats.map(f=>esc(f)).join('<br>') : '기능을 적으면 여기에 보여요'],
+    ['규칙', plan.rules.filter(r=>r.d).map(r=>`<div class="rule-line">만약 ${esc(r.w)} → ${esc(r.d)}</div>`).join('')],
+    ['출력', `${esc(plan.bot||'도우미')}의 말(${esc(plan.tone)}), 점수와 별`],
+    ['디자인', `${esc(plan.mood)} · ${c.n}`]
+  ].map(([k,v])=>`<div class="bp-row"><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+  const pr = buildPrompt(plan); $('#promptBox').textContent = pr; $('#promptLen').textContent = pr.length+'자';
+}
+function prefill({name, unit, type, idea}){
+  plan.name = name || plan.name; plan.unit = unit || plan.unit; plan.type = type || plan.type;
+  if(idea && !plan.f1) plan.f1 = idea;
+  Store.set('mas-hub-plan', plan); drawPlanner();
+}
+function copyText(text, okMsg){
+  const done = ()=>toast(okMsg||'복사했어요');
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text, done)); }
+  else fallbackCopy(text, done);
+}
+function fallbackCopy(text, done){
+  const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText='position:fixed;left:-9999px;top:0'; document.body.appendChild(ta); ta.select();
+  let ok=false; try{ ok = document.execCommand('copy'); }catch(e){} ta.remove();
+  ok ? done() : toast('복사가 막혀 있어요. 글을 길게 눌러 직접 복사해 주세요', 3200);
+}
+$('#copyPrompt').onclick = ()=>{ copyText($('#promptBox').textContent, '주문서를 복사했어요. 캔바 AI에 붙여 넣으세요!'); Sound.good(); };
+
+/* ---------------- 5 만들기 ---------------- */
+$('#canvaLink').href = CANVA_URL;
+$('#copyCanva').onclick = ()=>copyText(CANVA_URL, '캔바 입장 링크를 복사했어요');
+let qrDrawn = false;
+function drawQR(){ if(qrDrawn || !window.QRCode) return; try{ new QRCode($('#canvaQR'), {text:CANVA_URL, width:240, height:240, colorDark:'#111111', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.M}); qrDrawn = true; }catch(e){} }
+const STEPS = [
+  ['캔바 입장하기', '위의 <b>캔바 입장 링크</b>를 누르고 로그인 → <span class="kbd">참여</span>를 눌러 우리 반 팀에 들어가요.'],
+  ['Canva AI 열기', '캔바 첫 화면에서 <span class="kbd">Canva AI</span>를 누르고, 입력창 아래에서 <span class="kbd">&lt;/&gt; 코드</span>를 골라요. (첫 화면에 <span class="kbd">코드</span> 단추가 보이면 그것을 눌러도 돼요.)'],
+  ['주문서 붙여 넣기', '4단계에서 복사한 <b>주문서</b>를 붙여 넣고 보내기. AI가 프로그램을 만드는 동안 기다려요.'],
+  ['직접 해 보고 고치기', '<span class="kbd">미리보기</span>로 직접 풀어 보세요. 고칠 점은 아래 <b>고치기 주문</b>처럼 한 번에 하나씩 말해요.'],
+  ['게시하고 주소 복사', '오른쪽 위 <span class="kbd">게시(Publish)</span> → 주소 정하기 → <span class="kbd">게시</span>. 초록색 <b>Live</b> 옆 복사 단추로 주소를 복사해요. 게시가 안 되면 <span class="kbd">공유</span> → 링크 복사도 괜찮아요.'],
+  ['전시관에 올리기', '6단계 작품 전시관에서 <b>내 작품 올리기</b>를 누르고 주소를 붙여 넣어요.']
+];
+$('#makeSteps').innerHTML = STEPS.map((s,i)=>`<div class="step"><span class="sn">${i+1}</span><div><b>${s[0]}</b><p>${s[1]}</p></div></div>`).join('');
+const FIX = ['버튼과 글씨를 더 크게 해 줘','틀리면 정답을 바로 말하지 말고 힌트를 먼저 줘','점수와 별을 화면 위에 보여 줘','문제가 매번 다르게 무작위로 나오게 해 줘','맞히면 축하 효과(색종이)를 넣어 줘','어려움·보통·쉬움 난이도를 고를 수 있게 해 줘','정답을 검사하는 계산이 맞는지 다시 확인해 줘','태블릿 화면에서도 잘리지 않게 해 줘'];
+$('#fixChips').innerHTML = FIX.map(f=>`<button class="chip" type="button">${f}</button>`).join('');
+$$('#fixChips .chip').forEach(c=>c.onclick=()=>{ copyText(c.textContent, '복사했어요: '+c.textContent); Sound.pop(); });
+const chk = Store.get('mas-hub-chk', {});
+['chk1','chk2','chk3','chk4'].forEach(id=>{ const el=$('#'+id); el.checked=!!chk[id]; el.onchange=()=>{ chk[id]=el.checked; Store.set('mas-hub-chk', chk); }; });
+
+/* ---------------- 6 공유하기: 게시판 ---------------- */
+const EXAMPLES = APPS.map(a=>({id:'ex-'+a.id, pinned:true, name:'최일훈 선생님', title:a.name, unit:a.units.join(' · '), type:a.type, desc:a.desc, url:a.url, color:{galaxy:'violet',bot:'green',pattern:'coral'}[a.id], likes:0, wows:0, time:''}));
+const KINDS = {good:{n:'잘한 점',e:'👍',s:['문제가 4학년 내용에 딱 맞았어.','버튼이 크고 쓰기 편했어.','색과 글씨가 보기 좋았어.']},
+               wow:{n:'인상 깊은 점',e:'✨',s:['AI 도우미 말투가 재미있었어.','틀렸을 때 힌트가 친절했어.','이 아이디어가 정말 신기했어.']},
+               idea:{n:'이런 기능도!',e:'💡',s:['점수판이 있으면 더 재미있겠어.','난이도를 고를 수 있으면 좋겠어.','효과음을 넣어 보면 어때?']}};
+const Board = {
+  api: String(window.BOARD_API_URL||'').trim(),
+  mode: 'checking', posts: [], comments: [], filter: 'all', teacherKey: null, busy:false, lastErr:'',
+  local(){ return Store.get('mas-board-local', {posts:[], comments:[], reacts:{}}); },
+  saveLocal(d){ Store.set('mas-board-local', d); },
+  async refresh(quiet){
+    if(!this.api){ this.mode='preview'; const d=this.local(); this.posts=d.posts; this.comments=d.comments; this.render(); return; }
+    try{
+      const url = this.api + (this.api.includes('?')?'&':'?') + 'action=list' + (this.teacherKey?'&key='+encodeURIComponent(this.teacherKey):'') + '&t=' + Date.now();
+      const r = await fetch(url, {redirect:'follow'}); const d = await r.json();
+      if(!d.ok) throw new Error(d.error||'읽기 실패');
+      this.posts = d.posts||[]; this.comments = d.comments||[]; this.mode='live'; this.lastErr='';
+    }catch(e){ this.mode='error'; this.lastErr = String(e.message||e); }
+    this.render();
+    if(this.openId){ const a = document.activeElement; if(!(a && (a.id==='cText' || a.id==='cName'))) renderDetail(); }
+  },
+  async send(payload){
+    if(!this.api || this.mode==='preview'){
+      const d = this.local(); const now = new Date().toISOString(); const id = (payload.action==='post'?'p':'c')+Math.random().toString(36).slice(2,10);
+      if(payload.action==='post') d.posts.unshift({id, time:now, name:payload.name, title:payload.title, unit:payload.unit, type:payload.type||'', desc:payload.desc, url:payload.url, color:payload.color, likes:0, wows:0, hidden:false});
+      if(payload.action==='comment') d.comments.push({id, postId:payload.postId, time:now, name:payload.name, kind:payload.kind, text:payload.text, hidden:false});
+      if(payload.action==='react'){ const p = d.posts.find(p=>p.id===payload.postId); if(p) p[payload.kind==='wow'?'wows':'likes']++; else { d.reacts[payload.postId+payload.kind]=(d.reacts[payload.postId+payload.kind]||0)+1; } }
+      if(payload.action==='hide'){ const list = payload.target==='comment'?d.comments:d.posts; const x = list.find(x=>x.id===payload.id); if(x) x.hidden=payload.hidden; }
+      this.saveLocal(d); this.posts=d.posts; this.comments=d.comments; return {ok:true, id};
+    }
+    const r = await fetch(this.api, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload)});
+    return r.json();
+  },
+  counts(id){ if(this.mode==='preview'){ const d=this.local(); return {likes:d.reacts[id+'like']||0, wows:d.reacts[id+'wow']||0}; } return null; },
+  allPosts(){
+    const ex = EXAMPLES.map(e=>{ const live = this.posts.find(p=>p.id===e.id); const c = this.counts(e.id); return Object.assign({}, e, live?{likes:live.likes,wows:live.wows}:{}, c||{}); });
+    return ex.concat(this.posts.filter(p=>!String(p.id).startsWith('ex-')));
+  },
+  render(){
+    const st = $('#boardStatus');
+    st.className = 'status '+(this.mode==='live'?'st-live':this.mode==='preview'?'st-preview':this.mode==='error'?'st-error':'');
+    st.querySelector('span').textContent = this.mode==='live' ? '실시간 연결됨 · 모두에게 보여요' : this.mode==='preview' ? '미리보기 모드 · 이 기기에만 저장돼요' : this.mode==='error' ? '연결이 안 돼요 · 잠시 뒤 자동으로 다시 시도' : '확인하는 중';
+    st.title = this.mode==='error' ? this.lastErr : '';
+    const units = ['all','1','2','3','4','5','6'];
+    $('#filters').innerHTML = units.map(u=>`<button type="button" aria-pressed="${this.filter===u}" data-u="${u}">${u==='all'?'전체':u+'단원'}</button>`).join('');
+    $$('#filters button').forEach(b=>b.onclick=()=>{ this.filter=b.dataset.u; this.render(); });
+    const all = this.allPosts().filter(p=>this.filter==='all' || String(p.unit).includes(this.filter));
+    const kids = this.posts.filter(p=>!String(p.id).startsWith('ex-') && !p.hidden).length;
+    const nc = $('#navCount'); if(nc){ nc.hidden = !kids; nc.textContent = kids; }
+    const reacted = Store.get('mas-reacted', {});
+    const html = all.map(p=>{
+      const cc = this.comments.filter(c=>c.postId===p.id && !c.hidden).length;
+      const col = COLORS.find(c=>c.k===p.color) ? p.color : 'violet';
+      return `<article class="post p-${col} ${p.hidden?'is-hidden':''}" data-id="${esc(p.id)}">
+        <div class="post-art" ${p.pinned?`style="background:url('${ART[p.id.slice(3)][0]}') center/cover"`:''}>${p.pinned?`<img class="ex-char" src="${ART[p.id.slice(3)][1]}" alt="">`:postArt(p.id)}<span class="initial">${esc((p.title||'?').trim().charAt(0))}</span>${p.pinned?'<span class="pin">선생님 예시</span>':''}</div>
+        <div class="post-body"><h3>${esc(p.title)}</h3>
+          <div class="post-meta"><span>${esc(p.name)}</span>${p.unit?`<span class="tag gray">${esc(/^\d$/.test(String(p.unit))? p.unit+'단원 '+UNITS[p.unit] : p.unit)}</span>`:''}${p.time?`<span>${ago(p.time)}</span>`:''}${p.hidden?'<span class="hidden-badge">숨김</span>':''}</div>
+          <p class="post-desc">${esc(p.desc||'')}</p></div>
+        <div class="post-foot">
+          <div class="r1"><button class="react" data-react="like" aria-pressed="${!!reacted[p.id+'like']}" aria-label="좋아요">👍 <span class="num">${p.likes||0}</span></button>
+          <button class="react" data-react="wow" aria-pressed="${!!reacted[p.id+'wow']}" aria-label="멋져요">✨ <span class="num">${p.wows||0}</span></button>
+          <span class="grow"></span><span class="cc">💬 칭찬 <span class="num">${cc}</span></span>
+          ${this.teacherKey && !p.pinned ? `<button class="react" data-hide="${p.hidden?0:1}">${p.hidden?'보이기':'숨기기'}</button>`:''}</div>
+          <div class="r2"><a class="btn btn-sm" href="${safeUrl(p.url)}" target="_blank" rel="noopener noreferrer">열어서 해 보기 ↗</a><button class="btn btn-ghost btn-sm" data-open="1">칭찬 남기기</button></div>
+        </div></article>`;
+    }).join('');
+    const empty = kids ? '' : `<div class="empty" style="grid-column:1/-1"><span class="orb" aria-hidden="true" style="width:36px;height:36px"></span><b>아직 친구들 작품이 없어요</b><span class="small">첫 번째 디자이너가 되어 보세요! 위의 <b>＋ 내 작품 올리기</b>를 누르면 돼요.</span></div>`;
+    $('#gallery').innerHTML = html + empty;
+    $$('#gallery .post').forEach(card=>{
+      const id = card.dataset.id;
+      card.querySelectorAll('[data-react]').forEach(b=>b.onclick=()=>doReact(id, b.dataset.react, b));
+      card.querySelector('[data-open]').onclick=()=>openDetail(id);
+      const h = card.querySelector('[data-hide]'); if(h) h.onclick=()=>doHide('post', id, h.dataset.hide==='1');
+    });
+  }
+};
+function safeUrl(u){ u = String(u||''); if(/^https:\/\//i.test(u)) return esc(u); if(/^apps\/[\w-]+\.html$/.test(u)) return u; return '#'; }
+function ago(t){ const d = (Date.now()-new Date(t).getTime())/1000; if(!isFinite(d)) return ''; if(d<60) return '방금'; if(d<3600) return Math.floor(d/60)+'분 전'; if(d<86400) return Math.floor(d/3600)+'시간 전'; return new Date(t).toLocaleDateString('ko-KR'); }
+function hash(s){ let h=0; for(const ch of String(s)) h=(h*31+ch.charCodeAt(0))>>>0; return h; }
+function postArt(id){
+  const h = hash(id), k = h%4;
+  if(k===0) return `<svg viewBox="0 0 300 112" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${Array.from({length:60},(_,i)=>`<circle cx="${(i%15)*21+10}" cy="${Math.floor(i/15)*26+14}" r="${3+((h>>(i%9))&3)}" fill="var(--p)" opacity="${.18+((h>>(i%7))&3)*.15}"/>`).join('')}</svg>`;
+  if(k===1) return `<svg viewBox="0 0 300 112" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${[0,1,2,3,4].map(i=>`<path d="M0 ${30+i*18} Q 75 ${10+i*18+(h%20)} 150 ${30+i*18} T 300 ${30+i*18}" fill="none" stroke="var(--p)" stroke-width="6" opacity="${.2+i*.15}"/>`).join('')}</svg>`;
+  if(k===2) return `<svg viewBox="0 0 300 112" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${Array.from({length:24},(_,i)=>{const x=(i%8)*40, y=Math.floor(i/8)*40; return `<path d="M${x} ${y+40} L${x+20} ${y} L${x+40} ${y+40}z" fill="var(--p)" opacity="${.12+((h>>i)&3)*.18}"/>`;}).join('')}</svg>`;
+  return `<svg viewBox="0 0 300 112" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${[1,2,3,4,5,6].map(i=>`<circle cx="${220+(h%40)}" cy="56" r="${i*18}" fill="none" stroke="var(--p)" stroke-width="7" opacity="${.5-i*.06}"/>`).join('')}</svg>`;
+}
+async function doReact(id, kind, btn){
+  const reacted = Store.get('mas-reacted', {});
+  if(reacted[id+kind]){ toast('이미 눌렀어요'); return; }
+  reacted[id+kind] = true; Store.set('mas-reacted', reacted);
+  btn.setAttribute('aria-pressed','true'); const n = btn.querySelector('.num'); n.textContent = (+n.textContent)+1; Sound.pop();
+  try{ const r = await Board.send({action:'react', postId:id, kind}); if(r && r.ok===false && !String(id).startsWith('ex-')) toast(r.error||'다시 눌러 주세요'); }catch(e){ toast('연결이 잠깐 끊겼어요'); }
+}
+async function doHide(target, id, hidden){
+  try{ const r = await Board.send({action:'hide', target, id, hidden, key:Board.teacherKey}); if(r.ok){ toast(hidden?'숨겼어요':'다시 보이게 했어요'); Board.refresh(); } else toast(r.error||'실패했어요'); }catch(e){ toast('연결이 안 돼요'); }
+}
+
+/* 작품 올리기 */
+$('#newPostBtn').onclick = ()=>{
+  const me = Store.get('mas-hub-me', '');
+  const m = Shell.modal(`<h2>내 작품 올리기</h2><p class="muted small" style="margin-bottom:14px">이름 대신 별명도 좋아요. 성은 빼고 써 주세요.</p>
+    <form class="stack" id="postForm" novalidate>
+      <div class="grid-2"><div class="field"><label for="fName">이름(별명)</label><input class="input" id="fName" maxlength="12" required value="${esc(me)}"></div>
+      <div class="field"><label for="fUnit">단원</label><select class="input" id="fUnit">${Object.keys(UNITS).map(u=>`<option value="${u}" ${+u===plan.unit?'selected':''}>${u}단원 ${UNITS[u]}</option>`).join('')}</select></div></div>
+      <div class="field"><label for="fTitle">프로그램 이름</label><input class="input" id="fTitle" maxlength="30" required value="${esc(plan.name||'')}"></div>
+      <div class="field"><label for="fDesc">한 줄 소개</label><input class="input" id="fDesc" maxlength="120" placeholder="예: 각을 보고 어림하면 오차만큼 점수가 줄어드는 게임"></div>
+      <div class="field"><label for="fUrl">캔바 링크</label><input class="input" id="fUrl" inputmode="url" placeholder="https://… 로 시작하는 주소를 붙여 넣기"></div>
+      <div class="field"><label>카드 색</label><div class="swatches" id="fColor">${COLORS.map(c=>`<button type="button" class="swatch" style="background:var(${c.v})" aria-label="${c.n}" aria-pressed="${plan.color===c.k}" data-k="${c.k}"></button>`).join('')}</div></div>
+      <p class="small" id="fErr" style="color:var(--bad);min-height:1.2em" role="alert"></p>
+      <button class="btn" id="fSubmit" type="submit">전시관에 올리기</button>
+    </form>`);
+  let color = plan.color;
+  $$('#fColor .swatch', m.el).forEach(b=>b.onclick=()=>{ color=b.dataset.k; $$('#fColor .swatch', m.el).forEach(x=>x.setAttribute('aria-pressed', x===b)); });
+  $('#postForm', m.el).addEventListener('submit', async e=>{
+    e.preventDefault();
+    const name=$('#fName',m.el).value.trim(), title=$('#fTitle',m.el).value.trim(), url=$('#fUrl',m.el).value.trim(), desc=$('#fDesc',m.el).value.trim(), unit=$('#fUnit',m.el).value;
+    const err = $('#fErr', m.el);
+    if(!name || !title){ err.textContent='이름과 프로그램 이름을 써 주세요.'; return; }
+    if(!/^https:\/\/\S+$/i.test(url)){ err.textContent='캔바에서 복사한 https:// 주소를 붙여 넣어 주세요.'; return; }
+    const btn = $('#fSubmit', m.el); btn.disabled = true; btn.textContent = '올리는 중…';
+    try{
+      const r = await Board.send({action:'post', name, title, unit, desc, url, color, type:plan.type});
+      if(!r.ok){ err.textContent = r.error||'다시 시도해 주세요.'; btn.disabled=false; btn.textContent='전시관에 올리기'; return; }
+      Store.set('mas-hub-me', name); m.close(); Sound.win(); confetti(); toast('전시관에 올렸어요!'); Board.refresh();
+    }catch(ex){ err.textContent='연결이 끊겼어요. 잠시 뒤 다시 눌러 주세요.'; btn.disabled=false; btn.textContent='전시관에 올리기'; }
+  });
+};
+
+/* 작품 자세히 + 칭찬 */
+let detailModal = null;
+function openDetail(id){ Board.openId = id; draft.text = ''; detailModal = Shell.modal('<div id="detail"></div>', {onClose:()=>{ Board.openId=null; detailModal=null; }}); renderDetail(true); }
+let draft = {kind:'good', text:''};
+function renderDetail(first){
+  if(!detailModal) return; const id = Board.openId; const p = Board.allPosts().find(x=>x.id===id); if(!p) return;
+  const box = $('#detail', detailModal.el);
+  { const t = $('#cText', box), nm = $('#cName', box); if(t && !first) draft.text = t.value; if(nm) draft.name = nm.value; }
+  const list = Board.comments.filter(c=>c.postId===id && (Board.teacherKey || !c.hidden));
+  const col = COLORS.find(c=>c.k===p.color)?p.color:'violet';
+  box.className = 'p-'+col;
+  box.innerHTML = `<div class="stack">
+    <div class="detail-head"><span class="initial">${esc((p.title||'?').charAt(0))}</span><div><h2>${esc(p.title)}</h2><div class="post-meta">${esc(p.name)} ${p.pinned?'· 선생님 예시':''}</div></div></div>
+    ${p.desc?`<p class="muted small">${esc(p.desc)}</p>`:''}
+    <a class="btn" href="${safeUrl(p.url)}" target="_blank" rel="noopener noreferrer" style="align-self:flex-start">작품 열어서 해 보기 ↗</a>
+    <div class="card sunken stack">
+      <b>칭찬 남기기</b>
+      <div class="kinds">${Object.entries(KINDS).map(([k,v])=>`<button type="button" class="kind-btn" data-k="${k}" aria-pressed="${draft.kind===k}">${v.e} ${v.n}</button>`).join('')}</div>
+      <div class="starters">${KINDS[draft.kind].s.map(s=>`<button type="button">${s}</button>`).join('')}</div>
+      <textarea class="input" id="cText" maxlength="200" placeholder="${KINDS[draft.kind].n}을 구체적으로 써 주세요">${esc(draft.text)}</textarea>
+      <div class="row"><input class="input" id="cName" maxlength="12" placeholder="내 이름(별명)" value="${esc(draft.name!=null ? draft.name : Store.get('mas-hub-me',''))}" style="flex:1;min-width:0"><button class="btn" id="cSend">남기기</button></div>
+      <p class="small" id="cErr" style="color:var(--bad);min-height:1.2em" role="alert"></p>
+    </div>
+    <div class="c-list">${list.length? Object.entries(KINDS).map(([k,v])=>{ const cs = list.filter(c=>c.kind===k); if(!cs.length) return ''; return `<div class="c-group"><h4>${v.e} ${v.n} <span class="num">${cs.length}</span></h4><div class="stack">${cs.map(c=>`<div class="comment ${c.hidden?'is-hidden':''}"><span class="who">${esc(c.name)} · ${ago(c.time)} ${Board.teacherKey?`<button class="linkbtn" data-ch="${esc(c.id)}" data-h="${c.hidden?0:1}">${c.hidden?'보이기':'숨기기'}</button>`:''}</span>${esc(c.text)}</div>`).join('')}</div></div>`; }).join('') : '<p class="muted small">아직 남긴 말이 없어요. 첫 칭찬을 남겨 주세요!</p>'}</div>
+  </div>`;
+  $$('.kind-btn', box).forEach(b=>b.onclick=()=>{ draft.kind=b.dataset.k; draft.text=$('#cText',box).value; renderDetail(true); });
+  $$('.starters button', box).forEach(b=>b.onclick=()=>{ const t=$('#cText',box); t.value = (t.value? t.value.trim()+' ':'') + b.textContent; t.focus(); });
+  $$('[data-ch]', box).forEach(b=>b.onclick=()=>doHide('comment', b.dataset.ch, b.dataset.h==='1'));
+  $('#cSend', box).onclick = async ()=>{
+    const text = $('#cText',box).value.trim(), name = $('#cName',box).value.trim(), err = $('#cErr',box);
+    if(!name){ err.textContent='이름(별명)을 써 주세요.'; return; }
+    if(text.length<5){ err.textContent='조금 더 자세히 써 주세요 (5글자 이상).'; return; }
+    const btn = $('#cSend',box); btn.disabled = true;
+    try{
+      const r = await Board.send({action:'comment', postId:id, kind:draft.kind, text, name});
+      if(!r.ok){ err.textContent = r.error||'다시 시도해 주세요.'; btn.disabled=false; return; }
+      Store.set('mas-hub-me', name); draft.text=''; Sound.good(); toast('칭찬을 남겼어요!'); await Board.refresh(); renderDetail(true);
+    }catch(e){ err.textContent='연결이 끊겼어요. 잠시 뒤 다시 눌러 주세요.'; btn.disabled=false; }
+  };
+}
+setInterval(()=>{ if(current==='share' && !document.hidden && Board.mode!=='preview') Board.refresh(true); }, 12000);
+
+/* ---------------- 7 돌아보기 ---------------- */
+const note = Store.get('mas-hub-note', {r1:'',r2:'',r3:'',stars:0,name:''});
+['r1','r2','r3'].forEach(k=>{ const el=$('#'+k); el.value = note[k]||''; el.oninput=()=>{ note[k]=el.value; Store.set('mas-hub-note', note); }; });
+function drawStars(){ $('#r4').innerHTML = [1,2,3,4,5].map(i=>`<button type="button" class="${i<=note.stars?'on':''}" aria-label="별 ${i}개" data-i="${i}">★</button>`).join(''); $$('#r4 button').forEach(b=>b.onclick=()=>{ note.stars=+b.dataset.i; Store.set('mas-hub-note', note); drawStars(); Sound.tick(); }); }
+drawStars();
+$('#badgeName').value = note.name || Store.get('mas-hub-me','');
+function drawBadge(){ const n = $('#badgeName').value.trim(); $('#badgeWho').textContent = n || '이름'; $('#badgeProg').textContent = plan.name ? `「${plan.name}」을(를) 설계하고 공유했어요` : '나만의 수학 AI 프로그램을 설계하고 공유했어요'; }
+$('#badgeName').oninput = ()=>{ note.name = $('#badgeName').value; Store.set('mas-hub-note', note); drawBadge(); };
+$('#badgeBtn').onclick = ()=>{ drawBadge(); Sound.win(); confetti(); toast('오늘의 수학 프로그램 디자이너!'); };
+drawBadge();
+
+/* ---------------- 선생님 메뉴 ---------------- */
+let timerEnd = 0, timerT = null;
+function startTimer(min){ timerEnd = Date.now()+min*60000; clearInterval(timerT); tickTimer(); timerT = setInterval(tickTimer, 500); }
+function tickTimer(){ const chip=$('#timerChip'); const left = Math.max(0, timerEnd-Date.now()); if(!timerEnd){ chip.hidden=true; return; } chip.hidden=false; const s=Math.ceil(left/1000); chip.textContent = '⏱ '+String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); chip.classList.toggle('low', s<=60); if(left<=0){ clearInterval(timerT); timerEnd=0; chip.textContent='⏱ 끝!'; Sound.win(); setTimeout(()=>{ if(!timerEnd) chip.hidden=true; }, 8000); } }
+$('#timerChip').onclick = ()=>{ clearInterval(timerT); timerEnd=0; $('#timerChip').hidden=true; };
+$('#teacherBtn').onclick = ()=>{
+  const m = Shell.modal(`<h2>선생님 메뉴</h2>
+    <div class="stack">
+      <div class="card sunken stack"><b>활동 타이머</b><div class="row">${[3,5,10,15,25].map(n=>`<button class="btn btn-ghost btn-sm" data-min="${n}">${n}분</button>`).join('')}</div></div>
+      <div class="card sunken stack"><b>게시판 관리</b>
+        <p class="small muted">상태: ${Board.mode==='live'?'실시간 연결됨':Board.mode==='preview'?'미리보기 모드 (config.js에 주소가 비어 있음)':Board.mode==='error'?'연결 오류 — '+esc(Board.lastErr):'확인 중'}</p>
+        <div class="row"><input class="input" id="tKey" type="password" placeholder="선생님 비밀번호" style="flex:1;min-width:0" value="${Board.teacherKey?esc(Board.teacherKey):''}"><button class="btn btn-sm" id="tOn">${Board.teacherKey?'관리 끄기':'관리 켜기'}</button></div>
+        <p class="small muted">관리를 켜면 작품과 댓글마다 숨기기 단추가 보여요. 숨긴 글은 구글 시트에서 hidden 칸이 TRUE로 바뀌어요.</p>
+      </div>
+      <div class="card sunken stack"><b>이 페이지 QR (화면에 띄우기)</b><div class="qr" id="pageQR" style="width:180px;height:180px;align-self:center"></div><p class="small muted" style="overflow-wrap:anywhere;text-align:center">${esc(location.href.split('#')[0])}</p></div>
+    </div>`);
+  $$('[data-min]', m.el).forEach(b=>b.onclick=()=>{ startTimer(+b.dataset.min); m.close(); toast(b.dataset.min+'분 타이머 시작'); });
+  $('#tOn', m.el).onclick = ()=>{
+    if(Board.teacherKey){ Board.teacherKey=null; toast('관리 모드를 껐어요'); }
+    else { const k = $('#tKey', m.el).value.trim(); if(!k){ toast('비밀번호를 써 주세요'); return; } Board.teacherKey = k; toast('관리 모드를 켰어요'); }
+    m.close(); go('share');
+  };
+  try{ if(window.QRCode) new QRCode($('#pageQR', m.el), {text:location.href.split('#')[0]+'#share', width:240, height:240, colorDark:'#111111', colorLight:'#ffffff'}); }catch(e){}
+};
+$('#modelBtn').onclick = ()=>Shell.modal(`<div class="bp-head"><span class="orb" aria-hidden="true"></span><h3>수학 AI 스튜디오</h3></div><p class="muted" style="margin:12px 0">오늘 특강의 길잡이예요. 왼쪽 <b>수업 순서</b>를 따라 1단계부터 7단계까지 가면 나만의 수학 AI 프로그램이 완성돼요.</p><dl class="blueprint">${VIEWS.filter(v=>v.n).map(v=>`<div class="bp-row"><dt>${v.n}. ${v.t}</dt><dd>${v.d}</dd></div>`).join('')}</dl>`);
+
+/* ---------------- 시작 ---------------- */
+document.documentElement.setAttribute('data-theme','light');
+drawPlanner(); renderNav();
+const start = location.hash.slice(1);
+go(VIEWS.find(v=>v.id===start) ? start : 'home', false);
+if(current!=='share') Board.refresh(true);
+})();
+</script>
+</body>
+</html>
